@@ -9,7 +9,7 @@
 #
 # # create scatter plot for samples from each class
 # for class_value in range(3):
-#
+#]
 #     # get row indexes for samples with this class
 #     row_ix = where(y == class_value)
 #
@@ -52,7 +52,7 @@ def define_model(n_input):
 
 # prepare dataset
 trainX, trainy, testX, testy = prepare_data()
-
+]
 # get the model
 n_input = trainX.shape[1]
 model = define_model(n_input)

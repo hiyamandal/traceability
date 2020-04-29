@@ -53,7 +53,7 @@ def plot_decision_boundary(X, y, model, steps=1000, cmap='Paired'):
 
     # Make predictions across region of interest
     labels = model.predict(np.c_[xx.ravel(), yy.ravel()])
-
+]
     # Plot decision boundary in region of interest
     z = labels.reshape(xx.shape)
 
