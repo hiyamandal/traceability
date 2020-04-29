@@ -13,7 +13,7 @@ mean = [1.5, 6, 32]
 # cov = [[1, 1, 10], [1, 2, 10], [1, 1, 45]] # 1, 2, 45
 cov = [[1.5, 0, 0], [0, 6, 0], [0, 0, 45]] # 1, 2, 45
 
-L, D, T = np.random.multivariate_normal(mean, cov, 3000).T
+L, D, T = np.random.multivariate_normal(mean, cov, 15000).T
 
 idx = []
 for i in range(len(L)):
