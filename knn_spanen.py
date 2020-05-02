@@ -11,7 +11,7 @@ def gen_data():
     mean = [2.5, 1.5]
     cov = [[1.4, 1], [1.2, 0.5]]
 
-    F, P = np.random.multivariate_normal(mean, cov, 2000).T
+    F, P = np.random.multivariate_normal(mean, cov, 1000).T
 
     idx = []
     for i in range(len(F)):
@@ -64,7 +64,7 @@ def plotting():
 
     # shuffle and split training and test sets
     from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.2,
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.3,
                                                         random_state=0)
     F_train = X_train[:, 0]
     P_train = X_train[:, 1]
@@ -80,9 +80,10 @@ def plotting():
         ix = np.where(y_train == g)
         plt.scatter(F_train[ix], P_train[ix], c = cdict[g], label = labeldict[g])
     legend = plt.legend(loc="lower right", title="Legende")
-    plt.xlabel('Kzraft in kN')
+    plt.xlabel('Kraft in kN')
     plt.ylabel('Leistung in kW')
     plt.title('Trainingsdaten Station Spanen')
+    plt.savefig('data_train_spanen.png')
     plt.show()
 
     # plot test data
@@ -91,9 +92,10 @@ def plotting():
         ix = np.where(y_test == g)
         plt.scatter(F_test[ix], P_test[ix], c = cdict[g], label = labeldict[g])
     legend = plt.legend(loc="lower right", title="Legende")
-    plt.xlabel('Kzraft in kN')
+    plt.xlabel('Kraft in kN')
     plt.ylabel('Leistung in kW')
     plt.title('Testdaten Station Spanen')
+    plt.savefig('data_test_spanen.png')
     plt.show()
 
     h = .02  # step size in the mesh
@@ -187,13 +189,22 @@ def plotting():
         fig_train = plt.figure()
         plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
         plt.scatter(X_train[:, 0], X_train[:, 1], c=y_train, cmap=cmap_bold,
-                    edgecolor='k', s=20)
+                edgecolor='k', s=20)
+        # for i in range(len(y_train)):
+        #     if y_train[i] == 1 or y_train[i] == 2:
+        #         plt.scatter(X_train[i, 0], X_train[i, 1], c=y_train[i], cmap=cmap_bold,
+        #                     edgecolor='k', s=20)
+        # for i in range(len(y_train)):
+        #     if y_train[i] == 0:
+        #         plt.scatter(X_train[i, 0], X_train[i, 1], c=y_train[i], cmap=cmap_bold,
+        #                     edgecolor='k', s=20)
         plt.xlim(xx.min(), xx.max())
         plt.ylim(yy.min(), yy.max())
 
         plt.xlabel('Prozesskraft in kN')
         plt.ylabel('Leistung in kW')
-        plt.title('Klassifizierungsergebnis Station Spanen + TRAININGS')
+        plt.title('Klassifizierungsergebnis Station Spanen (Trainingsdaten)')
+        plt.savefig('train_spanen.png')
         plt.show()
 
         # Plot with test points
@@ -201,12 +212,14 @@ def plotting():
         plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
         plt.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap=cmap_bold,
                     edgecolor='k', s=20)
+        plt.scatter(2.9, 2.1, c='white', s=250, marker='x')
         plt.xlim(xx.min(), xx.max())
         plt.ylim(yy.min(), yy.max())
 
         plt.xlabel('Prozesskraft in kN')
         plt.ylabel('Leistung in kW')
-        plt.title('Klassifizierungsergebnis Station Spanen + TESTdatan')
+        plt.title('Klassifizierungsergebnis Station Spanen (Testdaten)')
+        plt.savefig('test_spanen.png')
         plt.show()
 
         # Confusion Matrix on Training and on Test Data
@@ -221,19 +234,39 @@ def plotting():
         titles_options = [("Konfusionsmatrix ohne Normalisierung", None),
                           ("Konfusionsmatrix mit Normalisierung", 'true')]
         class_names = ['Gutteil', 'Nachbearbeiten', 'Ausschuss']
-        for title, normalize in titles_options:
-            disp = plot_confusion_matrix(classifier, X_test, y_test,
-                                         display_labels=class_names,
-                                         cmap=plt.cm.Blues,
-                                         normalize=normalize)
-            disp.ax_.set_title(title)
-            disp.ax_.set_xlabel('Vorhergesagte Klasse')
-            disp.ax_.set_ylabel('Wahre Klasse')
+        # for title, normalize in titles_options:
 
-            print(title)
-            print(disp.confusion_matrix)
+        title = 'Konfusionsmatrix (absolute Zahlen)'
+        normalize = None
+        disp = plot_confusion_matrix(classifier, X_test, y_test,
+                                     display_labels=class_names,
+                                     cmap=plt.cm.Blues,
+                                     normalize=normalize)
+        disp.ax_.set_title(title)
+        disp.ax_.set_xlabel('Vorhergesagte Klasse')
+        disp.ax_.set_ylabel('Wahre Klasse')
 
-    plt.show()
+        print(title)
+        print(disp.confusion_matrix)
+        plt.savefig('confusion_absolute.png')
+        plt.show()
+
+        title = 'Konfusionsmatrix (normalisiert)'
+        normalize = 'true'
+        disp = plot_confusion_matrix(classifier, X_test, y_test,
+                                     display_labels=class_names,
+                                     cmap=plt.cm.Blues,
+                                     normalize=normalize)
+        disp.ax_.set_title(title)
+        disp.ax_.set_xlabel('Vorhergesagte Klasse')
+        disp.ax_.set_ylabel('Wahre Klasse')
+
+        print(title)
+        print(disp.confusion_matrix)
+        plt.savefig('confusion_normalised.png')
+        plt.show()
+
+
 
     # plot a classification report
     from sklearn.metrics import classification_report

@@ -8,12 +8,13 @@ from sklearn import neighbors, datasets
 n_neighbors = 5
 #n_neighbors = 20
 
+num_data = 3000
 
 mean = [1.5, 6, 32]
-# cov = [[1, 1, 10], [1, 2, 10], [1, 1, 45]] # 1, 2, 45
-cov = [[1.5, 0, 0], [0, 6, 0], [0, 0, 45]] # 1, 2, 45
+# cov = [[1, 1, 1   0], [1, 2, 10], [1, 1, 45]] # 1, 2, 45
+cov = [[1, 0, 0], [0, 2, 0], [0, 0, 75]] # 6, 45
 
-L, D, T = np.random.multivariate_normal(mean, cov, 15000).T
+L, D, T = np.random.multivariate_normal(mean, cov, num_data).T
 
 idx = []
 for i in range(len(L)):
@@ -51,53 +52,54 @@ def labels(L, D, T):
     cat = np.zeros(len(L))
     for i in range(len(L)):
         alpha_0 = 1
-        factor = 0.00001
+        factor = 0.1
+        # factor = 0.00001
         if L[i] > 3:
-            cat[i] = 1
-            # alpha = np.abs((L[i] - 3)) * factor
-            # prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
-            # cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
+            #cat[i] = 1
+            alpha = np.abs((L[i] - 3)) * factor
+            prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
+            cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
             if L[i] > 5:
                 cat[i] += 1
             #cat[i] = 1
 
         if D[i] > 8:
-            cat[i] = 1
-            # alpha = np.abs((D[i] - 8)) * factor
-            # prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
-            # cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
+            # cat[i] = 1
+            alpha = np.abs((D[i] - 8)) * factor
+            prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
+            cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
             if D[i] > 9 or T[i] > 50 or T[i] < 13:
                 cat[i] += 1
             #cat[i] = 1
 
         if D[i] < 4:
-            # alpha = np.abs((D[i] - 4)) * factor
-            # prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
-            # cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
-            cat[i] = 1
+            alpha = np.abs((D[i] - 4)) * factor
+            prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
+            cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
+            # cat[i] = 1
             if D[i] < 3 or T[i] < 13 or T[i] > 50:
                 cat[i] += 1
 
         if T[i] > 45:
-            # alpha = np.abs((T[i] - 45)) * factor
-            # prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
-            # cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
-            cat[i] = 1
+            alpha = np.abs((T[i] - 45)) * factor
+            prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
+            cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
+            # cat[i] = 1
             if T[i] > 50 or D[i] > 9:
                 cat[i] += 1
 
         if T[i] < 18:
-            cat[i] = 1
-            # alpha = np.abs((T[i] - 18)) * factor
-            # prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
-            # cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
+            # cat[i] = 1
+            alpha = np.abs((T[i] - 18)) * factor
+            prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
+            cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
             if T[i] < 13 or D[i] < 3:
                 cat[i] += 1
             #cat[i] = 1
 
         # if P[i] > 3 and F[i] > 5:
         #     alpha = ((F[i] - 5) * 0.1 + (P[i] - 3) * 0.1) / 2
-        #     prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
+        #     prior = np.DArandom.dirichlet((alpha_0, alpha), 1)[0]
         #     cat[i] = np.random.multinomial(1, prior, size=1)[0][0] + 1
         #     #cat[i] = 1
         #
@@ -109,6 +111,11 @@ def labels(L, D, T):
             #cat[i] = 0
         if D[i] > 9 or D[i] < 2:
             cat[i] = 2
+
+        if D[i] > 5 and D[i] < 7 and T[i]>18 and T[i]<45 and L[i]>2.5 and L[i]<6:
+            if T[i] > (7.71 * L[i] - 1.28 ):
+                cat[i] = 0
+
     return cat
 cat = labels(L, D, T)
 
@@ -127,8 +134,27 @@ legend = plt.legend(loc="lower right", title="Legende")
 ax.set_xlabel('Leistung in kW')
 ax.set_ylabel('Druck in bar')
 ax.set_zlabel('Temperatur in Grad Celsius')
-ax.set_title('Trainingsdaten Station lackieren')
+ax.set_title('Trainingsdaten Station Lackieren')
 plt.show()
+
+# fig2 = pyplot.figure()
+# ax = Axes3D(fig2)
+# plt.grid(True)
+# cdict = {0: 'green', 1: 'orange', 2: 'red'}
+# labeldict = {0: 'Gutteil', 1: 'Nachbearbeiten', 2: 'Ausschuss'}
+# for g in np.unique(cat):
+#     ix = np.where(cat == g)
+#     for i in range(len(idx)):
+#         if ix[0,i] > num_data / 10:
+#             np.delete(ix, i)
+#     ax.scatter(L[ix], D[ix], T[ix], c = cdict[g], label = labeldict[g])
+#
+# legend = plt.legend(loc="lower right", title="Legende")
+# ax.set_xlabel('Leistung in kW')
+# ax.set_ylabel('Druck in bar')
+# ax.set_zlabel('Temperatur in Grad Celsius')
+# ax.set_title('Trainingsdaten Station Lackieren')
+# plt.show()
 #
 # # import some data to play with
 # # iris = datasets.load_iris()
