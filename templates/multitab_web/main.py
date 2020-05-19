@@ -5,7 +5,7 @@ import dash
 from dash.dependencies import Input, Output
 import dash_html_components as html
 import dash_core_components as dcc
-from app_examples.multitab_web.tabs import tab_2, tab_1
+from templates.multitab_web.tabs import tab_2, tab_1
 
 app = dash.Dash()
 
