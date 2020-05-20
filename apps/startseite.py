@@ -9,8 +9,8 @@ from app import app
 
 layout = html.Div([
     commonmodules.get_header(),
-    html.Br(),
-    commonmodules.get_menu(),
+    # html.Br(),
+    # commonmodules.get_menu(),
     html.Br(),
     html.Div([
         html.H3('Startseite', style={'font-weight': 'bold', 'text-decoration': 'underline'}),

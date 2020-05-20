@@ -69,14 +69,12 @@ fig2.add_trace(go.Indicator(
 )
 fig2.update_layout(grid = {'rows': 2, 'columns': 1, 'pattern': "independent"}, height = 125,  margin = {'t':0, 'b':0, 'l':0, 'r':0}, ) # margin = {'t':0, 'b':0, 'l':0},  ,title="Prozessdaten an Station Spanen"
 
-
-# page layout
+# page content
 layout = html.Div([
     commonmodules.get_header(),
+    # html.Br(),
+    # commonmodules.get_menu(),
     html.Br(),
-    commonmodules.get_menu(),
-    html.Br(),
-    commonmodules.get_sidebar(),
     html.H3('Station Spanen', style={'font-weight': 'bold', 'text-decoration': 'underline'}),
     html.Hr(),
     html.H4('Klassifizierungsergebnisse', style={'font-weight': 'bold'}),
@@ -144,15 +142,9 @@ layout = html.Div([
                         # className="row",
                         # style={"height": "21vh"}
                 ),
-            ], #className="five columns"
-                    # , id="mainContainer",
-                    # style={
-                    #     "display": "flex",
-                    #     "flex-direction": "column"}
-            ),
+            ],),
             dbc.Col([
-                # html.H4('Klassifizierungsergebnis für Trainingsdaten'),
-                # html.Img(src='data:image/png;base64,{}'.format(plotly_fig_train))
+
                 html.Img(src=app.get_asset_url('test_spanen.png'))
             ],),
         ], align="center" ),
@@ -229,73 +221,89 @@ layout = html.Div([
     html.Hr(),
     html.H4('Detailinformationen', style={'font-weight': 'bold'}),
     html.Br(),
-    dcc.Tabs(id='tabs-spanen', value='tab-1', children=[
-        dcc.Tab(label='Konfusionsmatrix', style=tab_style, selected_style=tab_selected_style, children=[
-            html.Div([
-                dbc.Row([
-                    dbc.Col(
-                        html.Img(src=app.get_asset_url('confusion_absolute.png')),
-                        align="center",
-                    ),
-                    dbc.Col(
-                        html.Img(src=app.get_asset_url('confusion_normalised.png')),
-                        align="center",
-                    ),
-                ], align="center",)
-            ], className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
-        ]),
-        dcc.Tab(label='Wirtschaftliche Bewertung', style=tab_style, selected_style=tab_selected_style, children=[
-            html.Div([
-                html.H5("Wirtschaftliche Bewertung einfügen.")
-            ], className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
-        ]),
-    ], style=tabs_styles),
     html.Div(
         [
             dbc.Button(
-                "Konfusionsmatrix",
+                "Details ein-/ausblenden",
                 id="collapse-button-details",
                 className="mb-3",
                 color="primary",
             ),
             dbc.Collapse(
-                    html.Div([
-                        dbc.Row([
-                            dbc.Col(
-                                html.Img(src=app.get_asset_url('confusion_absolute.png')),
-                                align="center",
-                            ),
-                            dbc.Col(
-                                html.Img(src=app.get_asset_url('confusion_normalised.png')),
-                                align="center",
-                            ),
-                        ],
-                            align="center",
-                        )
-                    ], className="flex-column, flex-hd-row p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"), # d-flex
+                html.Div([
+                    dcc.Tabs(id='tabs-spanen', value='tab-1', children=[
+                        dcc.Tab(label='Konfusionsmatrix', style=tab_style, selected_style=tab_selected_style, children=[
+                            html.Div([
+                                dbc.Row([
+                                    dbc.Col(
+                                        html.Img(src=app.get_asset_url('confusion_absolute.png')),
+                                        align="center",
+                                    ),
+                                    dbc.Col(
+                                        html.Img(src=app.get_asset_url('confusion_normalised.png')),
+                                        align="center",
+                                    ),
+                                ], align="center",)
+                            ], className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
+                        ]),
+                        dcc.Tab(label='Wirtschaftliche Bewertung', style=tab_style, selected_style=tab_selected_style, children=[
+                            html.Div([
+                                html.H5("Wirtschaftliche Bewertung einfügen.")
+                            ], className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
+                        ]),
+                    ], style=tabs_styles),
+                ], className="flex-column, flex-hd-row p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
                 id="collapse-details",
-
-            ),
-        ],
-    ),
-    html.Div(
-        [
-            dbc.Button(
-                "Wirtschaftliche Bewertung",
-                id="collapse-button-commercial",
-                className="mb-3",
-                color="primary",
-            ),
-            dbc.Collapse(
-                dbc.Card(
-                    dbc.CardBody("Füge wirtschaftliche Bewertung hinzu."),
-                ),
-                id="collapse-commercial",
-
             ),
         ],
     ),
     html.Hr(),
+    # html.Div(
+    #     [
+    #         dbc.Button(
+    #             "Konfusionsmatrix",
+    #             id="collapse-button-confusion",
+    #             className="mb-3",
+    #             color="primary",
+    #         ),
+    #         dbc.Collapse(
+    #                 html.Div([
+    #                     dbc.Row([
+    #                         dbc.Col(
+    #                             html.Img(src=app.get_asset_url('confusion_absolute.png')),
+    #                             align="center",
+    #                         ),
+    #                         dbc.Col(
+    #                             html.Img(src=app.get_asset_url('confusion_normalised.png')),
+    #                             align="center",
+    #                         ),
+    #                     ],
+    #                         align="center",
+    #                     )
+    #                 ], className="flex-column, flex-hd-row p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"), # d-flex
+    #             id="collapse-confusion",
+    #
+    #         ),
+    #     ],
+    # ),
+    # html.Div(
+    #     [
+    #         dbc.Button(
+    #             "Wirtschaftliche Bewertung",
+    #             id="collapse-button-commercial",
+    #             className="mb-3",
+    #             color="primary",
+    #         ),
+    #         dbc.Collapse(
+    #             dbc.Card(
+    #                 dbc.CardBody("Füge wirtschaftliche Bewertung hinzu."),
+    #             ),
+    #             id="collapse-commercial",
+    #
+    #         ),
+    #     ],
+    # ),
+    # html.Hr(),
 ])
 
 # callbacks
@@ -314,29 +322,29 @@ def toggle_collapse_options(n, is_open):
     [Input("collapse-button-details", "n_clicks")],
     [State("collapse-details", "is_open")],
 )
-def toggle_collapse_details(n, is_open):
+def toggle_collapse_options(n, is_open):
     if n:
         return not is_open
     return is_open
 
-@app.callback(
-    Output("collapse-commercial", "is_open"),
-    [Input("collapse-button-commercial", "n_clicks")],
-    [State("collapse-commercial", "is_open")],
-)
-def toggle_collapse_commercial(n, is_open):
-    if n:
-        return not is_open
-    return is_open
+# @app.callback(
+#     Output("collapse-confusion", "is_open"),
+#     [Input("collapse-button-confusion", "n_clicks")],
+#     [State("collapse-confusion", "is_open")],
+# )
+# def toggle_collapse_details(n, is_open):
+#     if n:
+#         return not is_open
+#     return is_open
+#
+# @app.callback(
+#     Output("collapse-commercial", "is_open"),
+#     [Input("collapse-button-commercial", "n_clicks")],
+#     [State("collapse-commercial", "is_open")],
+# )
+# def toggle_collapse_commercial(n, is_open):
+#     if n:
+#         return not is_open
+#     return is_open
 
-# @app.callback(Output('tabs-spanen-content', 'children'),
-#               [Input('tabs-spanen', 'value')])
-# def render_content(tab):
-#     if tab == 'tab-1':
-#         return html.Div([
-#             html.H3('Tab content 1')
-#         ])
-#     elif tab == 'tab-2':
-#         return html.Div([
-#             html.H3('Tab content 2')
-#         ])
+

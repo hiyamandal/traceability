@@ -36,8 +36,8 @@ tab_selected_style = {
 layout = html.Div([
     commonmodules.get_header(),
     html.Br(),
-    commonmodules.get_menu(),
-    html.Br(),
+    # commonmodules.get_menu(),
+    # html.Br(),
     html.H3('Station Lackieren', style={'font-weight': 'bold', 'text-decoration': 'underline'}),
     html.Hr(),
     html.Div(
@@ -65,27 +65,4 @@ layout = html.Div([
             ),
         ]
     ),
-    dfx.Grid(id='grid', fluid=True, children=[
-        dfx.Row(children=[
-            dfx.Col(xs=12, lg=3, children=[
-                html.Div('Hello,'), html.Div('World!')
-            ])
-        ]),
-        dfx.Row(id='row', children=[
-            dfx.Col(id='col', xs=6, lg=2, children=html.Div('Hello, World!')),
-            dfx.Col(xs=6, lg=2, children=html.Div('Hello, World!'))
-        ])
-    ])
 ])
-
-# @app.callback(Output('tabs-lackieren-content', 'children'),
-#               [Input('tabs-lackieren', 'value')])
-# def render_content(tab):
-#     if tab == 'tab-1':
-#         return html.Div([
-#             html.H3('Tab content 1')
-#         ])
-#     elif tab == 'tab-2':
-#         return html.Div([
-#             html.H3('Tab content 2')
-#         ])

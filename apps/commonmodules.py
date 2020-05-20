@@ -10,8 +10,7 @@ def get_header():
         html.Div([
             html.H1(
                 'Machine Learning Applikation zur automatisierten Qualitätssicherung')
-        ], className="twelve columns padded"),
-
+        ], className="twelve columns"),
     ], className="row gs-header gs-text-header")
     return header
 
@@ -36,89 +35,39 @@ def get_menu():
 
     ], className="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm")
 
-    # nav = dbc.Nav(
-    #     [
-    #         dbc.NavItem(dbc.NavLink('Home  ', href='/')),
-    #         dbc.NavItem(dbc.NavLink('Station Anmeldung  ', href='/anmeldung')),
-    #         dbc.NavItem(dbc.NavLink('Station Spanen   ', href='/spanen')),
-    #         dbc.NavItem(dbc.NavLink('Station Lackieren   ', href='/lackieren',)),
-    #         dbc.NavItem(dbc.NavLink('Station Montage   ', href='/montage', )),
-    #     ],
-    #     pills=True,
-    # )
     return menu
 
 def get_sidebar():
-    # we use the Row and Col components to construct the sidebar header
-    # it consists of a title, and a toggle, the latter is hidden on large screens
-    sidebar_header = dbc.Row(
-        [
-            dbc.Col(html.H2("Sidebar", className="display-4")),
-            dbc.Col(
-                [
-                    html.Button(
-                        # use the Bootstrap navbar-toggler classes to style
-                        html.Span(className="navbar-toggler-icon"),
-                        className="navbar-toggler",
-                        # the navbar-toggler classes don't set color
-                        style={
-                            "color": "rgba(0,0,0,.5)",
-                            "border-color": "rgba(0,0,0,.1)",
-                        },
-                        id="navbar-toggle",
-                    ),
-                    html.Button(
-                        # use the Bootstrap navbar-toggler classes to style
-                        html.Span(className="navbar-toggler-icon"),
-                        className="navbar-toggler",
-                        # the navbar-toggler classes don't set color
-                        style={
-                            "color": "rgba(0,0,0,.5)",
-                            "border-color": "rgba(0,0,0,.1)",
-                        },
-                        id="sidebar-toggle",
-                    ),
-                ],
-                # the column containing the toggle will be only as wide as the
-                # toggle, resulting in the toggle being right aligned
-                width="auto",
-                # vertically align the toggle in the center
-                align="center",
-            ),
-        ]
-    )
-
+    # the style arguments for the sidebar. We use position:fixed and a fixed width
+    SIDEBAR_STYLE = {
+        "position": "fixed",
+        "top": 0,
+        "left": 0,
+        "bottom": 0,
+        "width": "16rem",
+        "padding": "2rem 1rem",
+        "background-color": "#f8f9fa",
+    }
     sidebar = html.Div(
         [
-            sidebar_header,
-            # we wrap the horizontal rule and short blurb in a div that can be
-            # hidden on a small screen
-            html.Div(
+            html.Div(html.Img(src=app.get_asset_url('ptw_web4.png'), style={'height': '7vh'})),
+            html.H4("Navigation", className="display-5"),
+            html.Hr(),
+            dbc.Nav(
                 [
-                    html.Hr(),
-                    html.P(
-                        "A responsive sidebar layout with collapsible navigation "
-                        "links.",
-                        className="lead",
-                    ),
+                    dbc.NavLink("Startseite", href='/', id="page-1-link"),
+                    dbc.NavLink('Station Anmeldung   ', href='/anmeldung', id="page-2-link"),
+                    dbc.NavLink('Station Spanen   ', href='/spanen', id="page-3-link"),
+                    dbc.NavLink('Station Lackieren    ', href='/lackieren', id="page-4-link"),
+                    dbc.NavLink('Station Montage   ', href='/montage', id="page-5-link"),
                 ],
-                id="blurb",
-            ),
-            # use the Collapse component to animate hiding / revealing links
-            dbc.Collapse(
-                dbc.Nav(
-                    [
-                        dbc.NavLink("Page 1", href="/page-1", id="page-1-link"),
-                        dbc.NavLink("Page 2", href="/page-2", id="page-2-link"),
-                        dbc.NavLink("Page 3", href="/page-3", id="page-3-link"),
-                    ],
-                    vertical=True,
-                    pills=True,
-                ),
-                id="collapse",
+                vertical=True,
+                pills=True,
             ),
         ],
-        id="sidebar",
+        style=SIDEBAR_STYLE,
     )
 
     return sidebar
+
+
