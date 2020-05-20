@@ -9,9 +9,10 @@ from app import app
 
 layout = html.Div([
     commonmodules.get_header(),
+    html.Br(),
     commonmodules.get_menu(),
     html.Br(),
-    html.H3('Station Montage', style={'font-weight': 'bold'}),
+    html.H3('Station Montage', style={'font-weight': 'bold', 'text-decoration': 'underline'}),
     html.Hr(),
     html.H4('Montage des Bauteils erfolgreich abgeschlossen!'),
     html.Br(),
@@ -19,7 +20,6 @@ layout = html.Div([
             [
                 dbc.Alert(
                     [
-                        # "Zur ",
                         html.A("Startseite", href="/", className="alert-link"),
                     ],
                     color="primary",

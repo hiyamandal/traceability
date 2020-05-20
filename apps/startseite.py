@@ -9,10 +9,11 @@ from app import app
 
 layout = html.Div([
     commonmodules.get_header(),
-    commonmodules.get_menu  (),
+    html.Br(),
+    commonmodules.get_menu(),
     html.Br(),
     html.Div([
-        html.H3('Startseite', style={'font-weight': 'bold'}),
+        html.H3('Startseite', style={'font-weight': 'bold', 'text-decoration': 'underline'}),
         html.Hr(),
         html.H4('Bitte neues Bauteil anmelden!'),
         html.Br(),

@@ -2,6 +2,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
+import dash_flexbox_grid as dfx
 
 import numpy as np
 import plotly.graph_objs as go
@@ -34,16 +35,11 @@ tab_selected_style = {
 
 layout = html.Div([
     commonmodules.get_header(),
+    html.Br(),
     commonmodules.get_menu(),
     html.Br(),
-    html.H3('Station Lackieren', style={'font-weight': 'bold'}),
+    html.H3('Station Lackieren', style={'font-weight': 'bold', 'text-decoration': 'underline'}),
     html.Hr(),
-    dcc.Tabs(id='tabs-spanen', value='tab-1', children=[
-        dcc.Tab(label='Übersicht', value='tab-1', style=tab_style, selected_style=tab_selected_style),
-        dcc.Tab(label='Details', value='tab-2', style=tab_style, selected_style=tab_selected_style),
-    ], style=tabs_styles),
-    html.Div(id='tabs-lackieren-content'),
-    html.Br(),
     html.Div(
         [
             dbc.Alert(
@@ -69,6 +65,17 @@ layout = html.Div([
             ),
         ]
     ),
+    dfx.Grid(id='grid', fluid=True, children=[
+        dfx.Row(children=[
+            dfx.Col(xs=12, lg=3, children=[
+                html.Div('Hello,'), html.Div('World!')
+            ])
+        ]),
+        dfx.Row(id='row', children=[
+            dfx.Col(id='col', xs=6, lg=2, children=html.Div('Hello, World!')),
+            dfx.Col(xs=6, lg=2, children=html.Div('Hello, World!'))
+        ])
+    ])
 ])
 
 # @app.callback(Output('tabs-lackieren-content', 'children'),
