@@ -39,43 +39,19 @@ def display_page(pathname):
                     html.P(f"The pathname {pathname} was not recognised..."),
                 ])
 
+
 # this callback uses the current pathname to set the active state of the
 # corresponding nav link to true, allowing users to tell see page they are on
+pathnames = ["empty","/", "/anmeldung", "/spanen", "/lackieren", "/montage"]
 @app.callback(
     [Output(f"page-{i}-link", "active") for i in range(1, 6)],
     [Input("url", "pathname")],
 )
 def toggle_active_links(pathname):
     if pathname == "/":
-        return True, False, False, False, False
-    elif pathname == '/anmeldung':
-        return False, True, False, False, False
-    elif pathname == '/spanen':
-        return False, False, True, False, False
-    elif pathname == '/lackieren':
-        return False, False, False, True, False
-    elif pathname == '/montage':
-        return False, False, False, False, True
+        return [True, False, False, False, False]
 
-# @app.callback(
-#     Output("sidebar", "className"),
-#     [Input("sidebar-toggle", "n_clicks")],
-#     [State("sidebar", "className")],
-# )
-# def toggle_classname(n, classname):
-#     if n and classname == "":
-#         return "collapsed"
-#     return ""
-#
-# @app.callback(
-#     Output("collapse", "is_open"),
-#     [Input("navbar-toggle", "n_clicks")],
-#     [State("collapse", "is_open")],
-# )
-# def toggle_collapse(n, is_open):
-#     if n:
-#         return not is_open
-#     return is_open
+    return [pathname == pathnames[i] for i in range(1, 6)]
 
 if __name__ == '__main__':
     app.run_server(debug=True)

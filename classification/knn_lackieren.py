@@ -53,7 +53,7 @@ def labels(L, D, T):
     for i in range(len(L)):
         alpha_0 = 1
         factor = 0.1
-        # factor = 0.00001
+        factor = 0.00001
         if L[i] > 3:
             #cat[i] = 1
             alpha = np.abs((L[i] - 3)) * factor
@@ -136,6 +136,14 @@ ax.set_ylabel('Druck in bar')
 ax.set_zlabel('Temperatur in Grad Celsius')
 ax.set_title('Trainingsdaten Station Lackieren')
 plt.show()
+
+# save data for scatter in file
+file = open("../assets/" + "lackieren_knn_data_" + str(num_data) + ".csv", "w+")
+file.write(str(cat.tolist()) + "\n")
+file.write(str(L.tolist()) + "\n")
+file.write(str(D.tolist()) + "\n")
+file.write(str(T.tolist()) + "\n")
+file.close()
 
 # fig2 = pyplot.figure()
 # ax = Axes3D(fig2)
@@ -224,6 +232,7 @@ plt.title("3-Class classification (k = %i, weights = '%s')"
 plt.xlabel('Leistung in kN')
 plt.ylabel('Druck in bar')
 plt.title('Klassifizierungsergebnis Station Lackieren, Temperatur = 32 Grad Celsius')
+plt.savefig('train_lackieren_temp.png')
 plt.show()
 
 
@@ -252,6 +261,7 @@ plt.title("3-Class classification (k = %i, weights = '%s')"
 plt.xlabel('Leistung in kW')
 plt.ylabel('Temperatur in Grad Celsius')
 plt.title('Klassifizierungsergebnis Station Lackieren, Druck = 6 bar')
+plt.savefig('train_lackieren_pressure.png')
 plt.show()
 
 # YZ prediction
@@ -279,6 +289,7 @@ plt.title("3-Class classification (k = %i, weights = '%s')"
 plt.xlabel('Druck in bar')
 plt.ylabel('Temperatur in Grad Celsius')
 plt.title('Klassifizierungsergebnis Station Lackieren, Leistung = 1.5kW')
+plt.savefig('train_lackieren_power.png')
 plt.show()
 
 

@@ -572,16 +572,23 @@ there.
   .container-display {
     display: flex;
   }
-  #wells,
-  #gas,
-  #oil {
+  #category,
+  #category_lackieren,
+  #accuracy,
+  #f1score,
+  #precision {
     margin-right: 10px;
   }
 
-  #wells {
+  #category {
     margin-left: 0px;
   }
-  #water {
+
+  #category_lackieren {
+    margin-left: 0px;
+  }
+
+  #sensitivity {
     margin-right: 0px;
   }
   .mini_container {

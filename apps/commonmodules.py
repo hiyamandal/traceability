@@ -19,7 +19,7 @@ tab_style = {
     'text-decoration': 'underline',
     'margin': 30,
     'cursor': 'pointer',
-     'display':'inline-block',
+    'display':'inline-block',
     'font-weight': 'bold',
     'font_size': '156px',
 }
@@ -44,22 +44,23 @@ def get_sidebar():
         "top": 0,
         "left": 0,
         "bottom": 0,
-        "width": "16rem",
-        "padding": "2rem 1rem",
+        "width": "24rem",
+        "padding": "3rem 2rem",
         "background-color": "#f8f9fa",
+        'font': {'size': 30}
     }
     sidebar = html.Div(
         [
-            html.Div(html.Img(src=app.get_asset_url('ptw_web4.png'), style={'height': '7vh'})),
+            html.Div(html.Img(src=app.get_asset_url('ptw_web4.png'), style={'height': '5vh'})),
             html.H4("Navigation", className="display-5"),
             html.Hr(),
             dbc.Nav(
                 [
-                    dbc.NavLink("Startseite", href='/', id="page-1-link"),
-                    dbc.NavLink('Station Anmeldung   ', href='/anmeldung', id="page-2-link"),
-                    dbc.NavLink('Station Spanen   ', href='/spanen', id="page-3-link"),
-                    dbc.NavLink('Station Lackieren    ', href='/lackieren', id="page-4-link"),
-                    dbc.NavLink('Station Montage   ', href='/montage', id="page-5-link"),
+                    dbc.NavLink("Startseite", href='/', id="page-1-link", style={'font-size': 20}),
+                    dbc.NavLink('Station Anmeldung   ', href='/anmeldung', id="page-2-link", style={'font-size': 20}),
+                    dbc.NavLink('Station Spanen   ', href='/spanen', id="page-3-link", style={'font-size': 20}),
+                    dbc.NavLink('Station Lackieren    ', href='/lackieren', id="page-4-link", style={'font-size': 20}),
+                    dbc.NavLink('Station Montage   ', href='/montage', id="page-5-link", style={'font-size': 20}),
                 ],
                 vertical=True,
                 pills=True,

@@ -5,13 +5,17 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from sklearn import neighbors, datasets
 
+import pickle
 
+global_list = []
 
-def gen_data():
+n_train = 1000
+def gen_data(n_train):
     mean = [2.5, 1.5]
-    cov = [[1.4, 1], [1.2, 0.5]]
+    cov = [[2.5, 1.5], [1.5, 1.5]]
+    # cov = [[1.4, 1], [1.2, 0.5]]
 
-    F, P = np.random.multivariate_normal(mean, cov, 1000).T
+    F, P = np.random.multivariate_normal(mean, cov, n_train).T
 
     idx = []
     for i in range(len(F)):
@@ -31,7 +35,7 @@ def gen_data():
 def labels(F, P):
     cat = np.zeros(len(F))
     for i in range(len(P)):
-        alpha_0 = 1
+        alpha_0 = 1000
 
         if P[i] > 3:
             alpha = (P[i] - 3) * 0.3
@@ -58,8 +62,8 @@ def labels(F, P):
             #cat[i] = 0
     return cat
 
-def plotting():
-    F, P, X = gen_data()
+def plotting(n_train):
+    F, P, X = gen_data(n_train)
     y = labels(F, P)
 
     # shuffle and split training and test sets
@@ -74,31 +78,31 @@ def plotting():
     cdict = {0: 'green', 1: 'orange', 2: 'red'}
     labeldict = {0: 'Gutteil', 1: 'Nachbearbeiten', 2: 'Ausschuss'}
 
-    # plot training data
-    plt.grid(True)
-    for g in np.unique(y_train):
-        ix = np.where(y_train == g)
-        plt.scatter(F_train[ix], P_train[ix], c = cdict[g], label = labeldict[g])
-    legend = plt.legend(loc="lower right", title="Legende")
-    plt.xlabel('Kraft in kN')
-    plt.ylabel('Leistung in kW')
-    plt.title('Trainingsdaten Station Spanen')
-    plt.savefig('data_train_spanen.png')
-    plt.show()
+    # # plot training data
+    # plt.grid(True)
+    # for g in np.unique(y_train):
+    #     ix = np.where(y_train == g)
+    #     plt.scatter(F_train[ix], P_train[ix], c = cdict[g], label = labeldict[g])
+    # legend = plt.legend(loc="lower right", title="Legende")
+    # plt.xlabel('Kraft in kN')
+    # plt.ylabel('Leistung in kW')
+    # plt.title('Trainingsdaten Station Spanen')
+    # plt.savefig('data_train_spanen.png')
+    # plt.show()
 
-    # plot test data
-    plt.grid(True)
-    for g in np.unique(y_test):
-        ix = np.where(y_test == g)
-        plt.scatter(F_test[ix], P_test[ix], c = cdict[g], label = labeldict[g])
-    legend = plt.legend(loc="lower right", title="Legende")
-    plt.xlabel('Kraft in kN')
-    plt.ylabel('Leistung in kW')
-    plt.title('Testdaten Station Spanen')
-    plt.savefig('data_test_spanen.png')
-    plt.show()
+    # # plot test data
+    # plt.grid(True)
+    # for g in np.unique(y_test):
+    #     ix = np.where(y_test == g)
+    #     plt.scatter(F_test[ix], P_test[ix], c = cdict[g], label = labeldict[g])
+    # legend = plt.legend(loc="lower right", title="Legende")
+    # plt.xlabel('Kraft in kN')
+    # plt.ylabel('Leistung in kW')
+    # plt.title('Testdaten Station Spanen')
+    # plt.savefig('data_test_spanen.png')
+    # plt.show()
 
-    h = .02  # step size in the mesh
+    h = .02  # step size in the mesh, was 0.02
 
     # Create color maps
     cmap_light = ListedColormap(['green', 'orange', 'red'])
@@ -113,19 +117,21 @@ def plotting():
         # we create an instance of Neighbours Classifier and fit the data.
         classifier = OneVsRestClassifier(neighbors.KNeighborsClassifier(n_neighbors, weights=weights))
         clf = classifier.fit(X_train, y_train)
-        # clf.fit(X, y)
+
+    # save model to binary with pickle
+        pickle.dump(clf, open("../assets/spanen_knn_model_"+str(n_train)+".sav", 'wb'))
 
         # # ROC
         # y_score = classifier.fit(X_train, y_train).decision_function(X_test)
         # # Compute ROC curve and ROC area for each class
         # fpr = dict()
-        # tpr = dict()sklearn.metrics
+        # tpr = dict()
         # roc_auc = dict()
         # n_classes = 2
         # from sklearn.metrics import roc_curve, auc
         # for i in range(n_classes):
         #     fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
-        #     roc_auc[i] = auc(fpr[i], tpr[i])sklearn.metrics
+        #     roc_auc[i] = auc(fpr[i], tpr[i])
         #
         # # Compute micro-average ROC curve and ROC area
         # fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
@@ -135,7 +141,7 @@ def plotting():
         # all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
         #
         # # Then interpolate all ROC curves at this points
-        # from scipy import interp
+        # from scipy import interpolate as interp
         # mean_tpr = np.zeros_like(all_fpr)
         # for i in range(n_classes):
         #     mean_tpr += interp(all_fpr, fpr[i], tpr[i])
@@ -181,6 +187,7 @@ def plotting():
         xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
                              np.arange(y_min, y_max, h))
         Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+        y_score = clf.predict(X_test)
 
         # Put the result into a color plot
         Z = Z.reshape(xx.shape)
@@ -222,9 +229,39 @@ def plotting():
         plt.savefig('test_spanen.png')
         plt.show()
 
+        # convert contourplot data to list
+        xx_list = xx[0, :].tolist()
+        yy_list = yy[:, 0].tolist()
+        Z_transp = Z
+        Z_list = Z_transp.tolist()
+
+        # save data for contourplot in file
+        file = open("../assets/"+"spanen_knn_data_"+str(n_train)+".csv", "w+")
+        file.write(str(y_test.tolist()) + "\n")
+        file.write(str(X_test.tolist()) + "\n")  # +","+str(xx_list)+","+str(yy_list)+","+str(Z_list))
+        file.write(str(xx_list) + "\n")
+        file.write(str(yy_list) + "\n")
+        file.write(str(Z_list) + "\n")
+        file.write(str(y_train.tolist()) + "\n")
+        file.write(str(X_train.tolist()) + "\n")
+        file.close()
+
+        # from sklearn.metrics import precision_recall_curve
+        # from sklearn.metrics import average_precision_score
+        # precision = dict()
+        # recall = dict()
+        # average_precision = dict()
+        # n_classes = 3
+        # for i in range(n_classes):
+        #     precision[i], recall[i], _ = precision_recall_curve(y_test[:, i],
+        #                                                         y_score[:, i])
+        #     average_precision[i] = average_precision_score(y_test[:, i], y_score[:, i])
+        # print('precision and recall', precision, recall)
+
         # Confusion Matrix on Training and on Test Data
         from sklearn.metrics import confusion_matrix
         y_pred = clf.predict(X_test)
+
         #confusion_train = confusion_matrix(y_train, Z)
         confusion_test = confusion_matrix(y_test, y_pred)
         print(confusion_test)
@@ -233,10 +270,10 @@ def plotting():
         from sklearn.metrics import plot_confusion_matrix
         titles_options = [("Konfusionsmatrix ohne Normalisierung", None),
                           ("Konfusionsmatrix mit Normalisierung", 'true')]
-        class_names = ['Gutteil', 'Nachbearbeiten', 'Ausschuss']
+        class_names = ['Gutteil', 'Nachbear.', 'Ausschuss']
         # for title, normalize in titles_options:
 
-        title = 'Konfusionsmatrix (absolute Zahlen)'
+        title = 'Konfusionsmatrix (absolut)'
         normalize = None
         disp = plot_confusion_matrix(classifier, X_test, y_test,
                                      display_labels=class_names,
@@ -266,11 +303,10 @@ def plotting():
         plt.savefig('confusion_normalised.png')
         plt.show()
 
-
-
     # plot a classification report
     from sklearn.metrics import classification_report
     report = classification_report(y_test, y_pred)
     print(report)
 
-plotting()
+plotting(n_train)
+

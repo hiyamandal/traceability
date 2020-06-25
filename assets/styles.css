@@ -107,11 +107,19 @@ body {
   flex-direction: column;
 }
 
-#wells {
+#category {
   flex: 1;
 }
 
-#gas {
+#category_lackieren {
+  flex: 1;
+}
+
+#accuracy {
+  flex: 1;
+}
+
+#f1score {
   flex: 1;
 }
 
@@ -119,17 +127,17 @@ body {
   align-items: center;
 }
 
-#oil {
+#precision {
   flex: 1;
 }
 
-#water {
+#sensitivity {
   flex: 1;
 }
 
-#tripleContainer {
+#fourContainer {
   display: flex;
-  flex: 3;
+  flex: 4;
 }
 
 #mainContainer {
