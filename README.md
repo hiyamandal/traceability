@@ -1,1 +1,1 @@
-# Plotly Dash App for Automated Quality Assurance by Classification in Manufacturing
+# Plotly Dash App for Automated Quality Assurance in Manufacturing
