@@ -143,6 +143,7 @@ layout = html.Div([
             id="collapse-button-options_lackieren",
             className="mb-3",
             color="primary",
+            style={'font-size': '100%'},
         ),
         dbc.Collapse(
             html.Div([
@@ -154,6 +155,7 @@ layout = html.Div([
                                 html.A("Montage", href="/montage", className="alert-link"),
                             ],
                             color="success",
+                            style={'font-size': '150%'},
                         ),
                         dbc.Alert(
                             [
@@ -161,6 +163,7 @@ layout = html.Div([
                                 html.A("Lackieren", href="/lackieren", className="alert-link"),
                             ],
                             color="warning",
+                            style={'font-size': '150%'},
                         ),
                         dbc.Alert(
                             [
@@ -168,6 +171,7 @@ layout = html.Div([
                                 html.A("Ausschuss", href="/", className="alert-link"),
                             ],
                             color="danger",
+                            style={'font-size': '150%'},
                         ),
                     ]
                 ),
@@ -186,6 +190,7 @@ layout = html.Div([
                 id="collapse-button-details_lackieren",
                 className="mb-3",
                 color="primary",
+                style={'font-size': '100%'},
             ),
             dbc.Collapse(
                 html.Div([
@@ -194,15 +199,15 @@ layout = html.Div([
                             html.Div([
                                 dbc.Row([
                                     dbc.Col(
-                                        html.Img(src=app.get_asset_url('train_lackieren_power.png')),
+                                        html.Img(src=app.get_asset_url('lackieren/train_lackieren_power.png')),
                                         align="center",
                                     ),
                                     dbc.Col(
-                                        html.Img(src=app.get_asset_url('train_lackieren_pressure.png')),
+                                        html.Img(src=app.get_asset_url('lackieren/train_lackieren_pressure.png')),
                                         align="center",
                                     ),
                                     dbc.Col(
-                                        html.Img(src=app.get_asset_url('train_lackieren_temp.png')),
+                                        html.Img(src=app.get_asset_url('lackieren/train_lackieren_temp.png')),
                                         align="center",
                                     ),
                                 ], align="center",)
@@ -212,12 +217,17 @@ layout = html.Div([
                             html.Div([
                                 dbc.Row([
                                     dbc.Col(
-                                        html.Img(src=app.get_asset_url('confusion_absolute_spanen.png')),
-                                        align="center",
+                                        html.Div([
+                                            html.Img(src=app.get_asset_url('confusion_absolut_spanen.png'))],
+                                            style={'width': '100 %', "text-align": "center", 'diplay': "flex"},
+                                        ),
                                     ),
+
                                     dbc.Col(
-                                        html.Img(src=app.get_asset_url('confusion_normalised_spanen.png')),
-                                        align="center",
+                                        html.Div([
+                                            html.Img(src=app.get_asset_url('confusion_normalised_spanen.png'))],
+                                            style={'width': '100 %', "text-align": "center", 'diplay': "flex"},
+                                        ),
                                     ),
                                 ], align="center",)
                             ], className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
@@ -403,7 +413,7 @@ def update_inputs(pathname):
         fig3_callback.update_layout(autosize=True, height=100, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
                                     paper_bgcolor="#f9f9f9", )
         n_train = 3000
-        with open("assets/lackieren_knn_data_"+str(n_train)+".csv") as mycsv:
+        with open("assets/lackieren/lackieren_knn_data_"+str(n_train)+".csv") as mycsv:
             count = 0
             for line in mycsv:
                 if count == 0:
@@ -563,6 +573,7 @@ def update_inputs(pathname):
                                 html.A("Montage", href="/montage", className="alert-link"),
                             ],
                             color="success",
+                            style={'font-size': '150%'},
                             ),
         # elif z[0] == 1:
         #     cat_string = "Nachbearbeiten"
@@ -586,8 +597,15 @@ def update_inputs(pathname):
         #                         color="danger",
         #                         ),
         #
-        category =  html.H4(cat_string, style={"text-align": "center", "color": "white",
+        category = html.Div(
+                        [
+                            html.Br(),
+                            html.Br(),
+                            html.Br(),
+                            html.H4(cat_string, style={"text-align": "center", "color": "white",
                                                    'font-weight': 'bold', 'vertical-align': 'middle'}, id="3cat"),
+                         ],
+                    )
 
         style = {"background-color": cat_color, 'display': 'inline-block', "text-align": "center", 'vertical-align': 'middle'}
 

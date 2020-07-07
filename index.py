@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
 from app import app
-from apps import startseite, anmeldung, spanen, lackieren, montage, commonmodules
+from apps import anmeldung, spanen, lackieren, montage, commonmodules
 
 # the styles for the main content position it to the right of the sidebar and
 # add some padding.
@@ -21,9 +21,9 @@ app.layout = html.Div([dcc.Location(id="url", refresh=False), commonmodules.get_
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/':
-         return startseite.layout
-    elif pathname == '/anmeldung':
+    # if pathname == '/':
+    #      return startseite.layout
+    if   pathname == '/':
          return anmeldung.layout
     elif pathname == '/spanen':
          return spanen.layout
@@ -42,16 +42,16 @@ def display_page(pathname):
 
 # this callback uses the current pathname to set the active state of the
 # corresponding nav link to true, allowing users to tell see page they are on
-pathnames = ["empty","/", "/anmeldung", "/spanen", "/lackieren", "/montage"]
+pathnames = ["empty", "/", "/spanen", "/lackieren", "/montage"]
 @app.callback(
-    [Output(f"page-{i}-link", "active") for i in range(1, 6)],
+    [Output(f"page-{i}-link", "active") for i in range(1, 5)],
     [Input("url", "pathname")],
 )
 def toggle_active_links(pathname):
     if pathname == "/":
-        return [True, False, False, False, False]
+        return [True, False, False, False]
 
-    return [pathname == pathnames[i] for i in range(1, 6)]
+    return [pathname == pathnames[i] for i in range(1, 5)]
 
 if __name__ == '__main__':
     app.run_server(debug=True)

@@ -18,12 +18,17 @@ global_list = [0]
 
 # tab styles
 tabs_styles = {
-    'height': '54px'
+    'height': '54px',
+    'font-size': '120%',
+    'text-align':"center",
+    'display': 'inline-block',
 }
 tab_style = {
     'borderBottom': '1px solid #d6d6d6',
     'padding': '6px',
     'fontWeight': 'bold',
+    'text-align': "center",
+    'display': 'inline-block',
 }
 tab_selected_style = {
     'borderTop': '1px solid #d6d6d6',
@@ -31,7 +36,9 @@ tab_selected_style = {
     'backgroundColor': '#119DFF',
     'color': 'white',
     'padding': '6px',
-    'fontWeight': 'bold'
+    'fontWeight': 'bold',
+    'text-align':"center",
+    'display': 'inline-block',
 }
 
 config = dict({'scrollZoom': True})
@@ -142,6 +149,7 @@ layout = html.Div([
             id="collapse-button-options",
             className="mb-3",
             color="primary",
+            style={'font-size': '100%'},
         ),
         dbc.Collapse(
             html.Div([
@@ -153,6 +161,7 @@ layout = html.Div([
                                 html.A("Lackieren", href="/lackieren", className="alert-link"),
                             ],
                             color="success",
+                            style={'font-size': '150%'},
                         ),
                         dbc.Alert(
                             [
@@ -160,6 +169,7 @@ layout = html.Div([
                                 html.A("Spanen", href="/spanen", className="alert-link"),
                             ],
                             color="warning",
+                            style={'font-size': '150%'},
                         ),
                         dbc.Alert(
                             [
@@ -167,6 +177,7 @@ layout = html.Div([
                                 html.A("Ausschuss", href="/", className="alert-link"),
                             ],
                             color="danger",
+                            style={'font-size': '150%'},
                         ),
                     ]
                 ),
@@ -185,6 +196,7 @@ layout = html.Div([
                 id="collapse-button-details",
                 className="mb-3",
                 color="primary",
+                style={'font-size': '100%'},
             ),
             dbc.Collapse(
                 html.Div([
@@ -193,12 +205,16 @@ layout = html.Div([
                             html.Div([
                                 dbc.Row([
                                     dbc.Col(
-                                        html.Img(src=app.get_asset_url('confusion_absolute_spanen.png')),
-                                        align="center",
+                                        html.Div([
+                                            html.Img(src=app.get_asset_url('spanen/confusion_absolute_spanen.png'))],
+                                            style = {'width': '100 %', "text-align": "center", 'diplay': "flex"},
+                                        ),
                                     ),
                                     dbc.Col(
-                                        html.Img(src=app.get_asset_url('confusion_normalised_spanen.png')),
-                                        align="center",
+                                        html.Div([
+                                            html.Img(src=app.get_asset_url('spanen/confusion_normalised_spanen.png'))],
+                                            style={'width': '100 %', "text-align": "center", 'diplay': "flex"},
+                                        ),
                                     ),
                                 ], align="center",)
                             ], className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
@@ -355,7 +371,7 @@ def update_inputs(pathname):
         fig2_callback.update_layout(autosize=True, height=150, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
                                     paper_bgcolor="#f9f9f9", )
         n_train = 1000
-        with open("assets/spanen_knn_data_"+str(n_train)+".csv") as mycsv:
+        with open("assets/spanen/spanen_knn_data_"+str(n_train)+".csv") as mycsv:
             count = 0
             for line in mycsv:
                 if count == 0:
@@ -471,7 +487,7 @@ def update_inputs(pathname):
             x=np.asarray(F[0]),
             y=np.asarray(P[0]),
             mode='markers',
-            name='Prozesskräfte',
+            name='Prozessparameter',
             marker_color='magenta',
             marker=dict(
                 symbol='cross',
@@ -491,12 +507,15 @@ def update_inputs(pathname):
             font=dict(
                 size=18,
             ),
+            xaxis=dict(
+                range=[0,8]
+            )
         )
 
         # load model from pickle
         import pickle
 
-        clf = pickle.load(open("assets/spanen_knn_model_"+str(n_train)+".sav", 'rb'))
+        clf = pickle.load(open("assets/spanen/spanen_knn_model_"+str(n_train)+".sav", 'rb'))
         z = clf.predict(np.c_[F[0], P[0]])
         print('z',z)
         if z[0] == 0:
@@ -508,6 +527,7 @@ def update_inputs(pathname):
                                     html.A("Lackieren", href="/lackieren", className="alert-link"),
                                 ],
                                 color="success",
+                                style={'font-size': '150%'},
                                 ),
         elif z[0] == 1:
             cat_string = "Nachbearbeiten"
@@ -518,6 +538,7 @@ def update_inputs(pathname):
                                     html.A("Spanen", href="spanen", className="alert-link"),
                                 ],
                                 color="warning",
+                                style={'font-size': '150%'},
                                 ),
 
         elif z[0] == 2:
@@ -529,10 +550,18 @@ def update_inputs(pathname):
                                     html.A("Ausschuss", href="/", className="alert-link"),
                                 ],
                                 color="danger",
+                                style={'font-size': '150%'},
                                 ),
 
-        category = html.H4(cat_string, style={"text-align": "center", "color": "white",
+        category = html.Div(
+                        [
+                            html.Br(),
+                            html.Br(),
+                            html.Br(),
+                            html.H4(cat_string, style={"text-align": "center", "color": "white",
                                                    'font-weight': 'bold', 'vertical-align': 'middle'}, id="3cat"),
+                         ],
+                    )
 
         style = {"background-color": cat_color, 'display': 'inline-block', "text-align": "center", 'vertical-align': 'middle'}
 

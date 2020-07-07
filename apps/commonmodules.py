@@ -27,7 +27,7 @@ tab_style = {
 def get_menu():
     menu = html.Div([
 
-        dcc.Link('Startseite   ', href='/', className="p-2 text-dark", style=tab_style),
+        #dcc.Link('Startseite   ', href='/', className="p-2 text-dark", style=tab_style),
         dcc.Link('Station Anmeldung   ', href='/anmeldung', className="p-2 text-dark", style=tab_style),
         dcc.Link('Station Spanen   ', href='/spanen', className="p-2 text-dark", style=tab_style),
         dcc.Link('Station Lackieren    ', href='/lackieren', className="p-2 text-dark", style=tab_style),
@@ -56,11 +56,11 @@ def get_sidebar():
             html.Hr(),
             dbc.Nav(
                 [
-                    dbc.NavLink("Startseite", href='/', id="page-1-link", style={'font-size': 20}),
-                    dbc.NavLink('Station Anmeldung   ', href='/anmeldung', id="page-2-link", style={'font-size': 20}),
-                    dbc.NavLink('Station Spanen   ', href='/spanen', id="page-3-link", style={'font-size': 20}),
-                    dbc.NavLink('Station Lackieren    ', href='/lackieren', id="page-4-link", style={'font-size': 20}),
-                    dbc.NavLink('Station Montage   ', href='/montage', id="page-5-link", style={'font-size': 20}),
+                    #dbc.NavLink("Startseite", href='/', id="page-1-link", style={'font-size': 20}),
+                    dbc.NavLink('Station Anmeldung   ', href='/', id="page-1-link", style={'font-size': 20}),
+                    dbc.NavLink('Station Spanen   ', href='/spanen', id="page-2-link", style={'font-size': 20}),
+                    dbc.NavLink('Station Lackieren    ', href='/lackieren', id="page-3-link", style={'font-size': 20}),
+                    dbc.NavLink('Station Montage   ', href='/montage', id="page-4-link", style={'font-size': 20}),
                 ],
                 vertical=True,
                 pills=True,
