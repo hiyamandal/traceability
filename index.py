@@ -9,7 +9,7 @@ from apps import anmeldung, spanen, lackieren, montage, commonmodules
 # the styles for the main content position it to the right of the sidebar and
 # add some padding.
 CONTENT_STYLE = {
-    "margin-left": "18rem",
+    "margin-left": "26rem", # 18rem bei 5% body margin
     "margin-right": "2rem",
     "padding": "2rem 1rem",
 }
@@ -21,8 +21,6 @@ app.layout = html.Div([dcc.Location(id="url", refresh=False), commonmodules.get_
 @app.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
-    # if pathname == '/':
-    #      return startseite.layout
     if   pathname == '/':
          return anmeldung.layout
     elif pathname == '/spanen':

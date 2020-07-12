@@ -14,6 +14,8 @@ from app import app
 from scipy.stats import multinomial, uniform, expon
 import numpy as np
 
+global_list_lackieren = [0]
+
 # tab styles
 tabs_styles = {
     'height': '54px'
@@ -110,7 +112,7 @@ layout = html.Div([
                                         className="pretty_container"
                                     ),
                                 ],
-                                id="fourContainer",
+                                id="fiveContainer",
                             )
                         ],
                         id="infoContainer",
@@ -218,14 +220,14 @@ layout = html.Div([
                                 dbc.Row([
                                     dbc.Col(
                                         html.Div([
-                                            html.Img(src=app.get_asset_url('confusion_absolut_spanen.png'))],
+                                            html.Img(src=app.get_asset_url('lackieren/confusion_absolut_lackieren.png'))],
                                             style={'width': '100 %', "text-align": "center", 'diplay': "flex"},
                                         ),
                                     ),
 
                                     dbc.Col(
                                         html.Div([
-                                            html.Img(src=app.get_asset_url('confusion_normalised_spanen.png'))],
+                                            html.Img(src=app.get_asset_url('confusion_normalised_lackieren.png'))],
                                             style={'width': '100 %', "text-align": "center", 'diplay': "flex"},
                                         ),
                                     ),
@@ -280,27 +282,30 @@ def toggle_collapse_options(n, is_open):
        ])
 def update_inputs(pathname):
 
-    print(pathname)
     if pathname == '/lackieren':
 
-        # # erzeuge randomisierte prozessgrößen
-        # draw = multinomial.rvs(1, [0.4, 0.3, 0.3]) #0.5, 0.3, 0.2
-        # index = np.where(draw == 1)
-        #
-        # # gutteil, leisung P und kraft F sind OK
-        # if index[0] == 0:
-        #
-        #     mean = [2.5, 1.5]
-        #     cov = [[1.4, 1], [1.2, 0.5]]
-        #
-        #     bool = True
-        #     while bool:
-        #         F, P = np.random.multivariate_normal(mean, cov, 1).T
-        #         if F > 0.5 and F < 5 and P > 0 and P < 3:
-        #             bool = False
-        #
+        # append global list
+        index = global_list_lackieren[-1]
+        while global_list_lackieren[-1] == index:
+            # erzeuge randomisierte prozessgrößen
+            draw = multinomial.rvs(1, [0.4, 0.3, 0.3])  # 0.5, 0.3, 0.2
+            index = int(np.where(draw == 1)[0])
+        global_list_lackieren.append(index)
+
+        # gutteil, leisung P und kraft F sind OK
+        if index == 0:
+
+            mean = [1.5, 6, 32]
+            cov = [[1, 0, 0], [0, 2, 0], [0, 0, 75]]
+
+            bool = True
+            while bool:
+                L, D, T = np.random.multivariate_normal(mean, cov, 1).T
+                if L > 0 and L < 3 and D > 4 and D < 8 and T > 18 and T < 45:
+                    bool = False
+
         # # nacharbeit
-        # elif index[0] == 1:
+        # elif index == 1:
         #     draw2 = multinomial.rvs(1, [0.5, 0.5])
         #     index2 = np.where(draw2 == 1)
         #
@@ -326,7 +331,7 @@ def update_inputs(pathname):
         #             F = expon.rvs(5.5, 0.2, size=1)
         #
         # # ausschuss: leistung und kraft zu hoch
-        # elif index[0] == 2:
+        # elif index == 2:
         #     P = expon.rvs(3.5, 0.3, size=1)  # loc, scale, size
         #     F = expon.rvs(5.5, 0.2, size=1)
 
@@ -436,35 +441,17 @@ def update_inputs(pathname):
 
         L = re.sub('\s+', '', L)
         L = ast.literal_eval(L)
-        # L = np.asarray(ast.literal_eval(L))
-        # L = np.round(L[:, 0],2).tolist()
 
         D = re.sub('\s+', '', D)
         D = ast.literal_eval(D)
-        # D = np.asarray(ast.literal_eval(D))
-        # D = np.round(D[:, 0],2).tolist()
 
         T = re.sub('\s+', '', T)
         T = ast.literal_eval(T)
-        # T = np.asarray(ast.literal_eval(T))
-        # T = np.round(T[:, 0],2).tolist()
 
 
         # dataframe for scatter data
         df = pandas.DataFrame({'Leistung in kW': L, 'Druck in bar': D, 'Temperatur in °C': T, 'z_scatter': z_scatter})
 
-        # # contour plot
-        # colorscale = [[0, 'green'], [0.5, 'darkorange'], [1, 'darkred']]
-        # fig4_callback = go.Figure(data=
-        # go.Contour(
-        #     name='Klassifizierung',
-        #     z=z_cont,
-        #     x=x_cont,
-        #     y=y_cont,
-        #     colorscale=colorscale,
-        #     showscale=False,
-        # ))
-        #
         # define marker colors
         marker_color = {
             2.0: 'red',
@@ -496,41 +483,6 @@ def update_inputs(pathname):
             )
         ))
 
-        fig4_callback.update_layout(
-            margin = {'l': 0, 'r': 0, 't': 0, 'b': 0},
-            scene=dict(
-                xaxis=dict(
-                    title='Leistung in kW'),
-                yaxis=dict(
-                    title='Druck in bar'),
-                zaxis=dict(
-                    title='Temperatur in °C'), ),
-            # xaxis_title='Leistung in kN',
-            # yaxis_title='Druck in bar',
-            # zaxis_title='Temperatur in °C',
-            # font=dict(
-            #     size=18,
-            # ),
-        )
-
-        # marker_colors = [marker_color[k] for k in df_test['z_test_scatter'].values]
-        #
-        # # scatter plot of training data
-        # fig4_callback.add_trace(go.Scatter(
-        #     x=df_test['x_test_scatter'],
-        #     y=df_test['y_test_scatter'],
-        #     mode='markers',
-        #     name='Testdaten',
-        #     marker_color=marker_colors,
-        #     marker=dict(
-        #         size=10,
-        #         line=dict(
-        #             color='DarkSlateGrey',
-        #             width=2
-        #         )
-        #     )
-        # ))
-        #
         # # scatter plot of single new test point
         # fig4_callback.add_trace(go.Scatter(
         #     x=np.asarray(F[0]),
@@ -548,22 +500,30 @@ def update_inputs(pathname):
         #         )
         #     )
         # ))
-        #
-        # fig4_callback.update_layout(
-        #     margin = {'l': 5, 'r': 5, 't': 15, 'b': 5},
-        #     xaxis_title='Kraft in kN',
-        #     yaxis_title='Leistung in kW',
-        #     font=dict(
-        #         size=18,
-        #     ),
-        # )
-        #
+
+        fig4_callback.update_layout(
+            margin = {'l': 0, 'r': 0, 't': 0, 'b': 0},
+            scene=dict(
+                xaxis=dict(
+                    title='Leistung in kW'),
+                yaxis=dict(
+                    title='Druck in bar'),
+                zaxis=dict(
+                    title='Temperatur in °C'), ),
+            # xaxis_title='Leistung in kN',
+            # yaxis_title='Druck in bar',
+            # zaxis_title='Temperatur in °C',
+            # font=dict(
+            #     size=18,
+            # ),
+        )
+
+
         # # load model from pickle
         # import pickle
         #
         # clf = pickle.load(open("assets/lackieren_knn_model_"+str(n_train)+".sav", 'rb'))
         # z = clf.predict(np.c_[F[0], P[0]])
-        # print('z',z)
         # if z[0] == 0:
         cat_string = "Gutteil"
         cat_color = "green"
@@ -608,8 +568,6 @@ def update_inputs(pathname):
                     )
 
         style = {"background-color": cat_color, 'display': 'inline-block', "text-align": "center", 'vertical-align': 'middle'}
-
-        # fig4_callback = go.Figure()
 
         return [fig1_callback, fig2_callback, fig3_callback, fig4_callback, category, style, empfehlung_alert]
 

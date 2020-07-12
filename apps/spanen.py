@@ -14,7 +14,10 @@ from app import app
 from scipy.stats import multinomial, uniform, expon
 import numpy as np
 
-global_list = [0]
+global_index_spanen = [0]
+global_slider_spanen = ['1000']
+global_P_list = []
+global_F_list = []
 
 # tab styles
 tabs_styles = {
@@ -56,11 +59,17 @@ layout = html.Div([
             dbc.Col([
                 html.Div([
                     dbc.Row([
-                        html.Div([dcc.Graph(id='fig1_callback'),], style={'textAlign': 'center', 'width': '100%'}),
+                        html.Div([
+                            dcc.Graph(id='fig1_callback'),
+                        ], style={'textAlign': 'center', 'width': '100%'}),
                     ]),
 
                     dbc.Row([
-                        html.Div([dcc.Graph(id='fig2_callback'),], style={'textAlign': 'center', 'width': '100%'}),
+                        html.Div(
+                            [
+                                dcc.Graph(id='fig2_callback'),
+                             ], style={'textAlign': 'center', 'width': '100%'}),
+
                     ]),
                 ],
                 className = "pretty_container",),
@@ -73,50 +82,23 @@ layout = html.Div([
                                         className="pretty_container",
                                     ),
                                     html.Div(
-                                        [
-                                            html.H4("Genauigkeit", style={"text-align": "center",'font-weight': 'bold'}),
-                                            html.Br(),
-                                            html.H2("0.96", style={"text-align": "center",'font-weight': 'bold'}, ),
-                                            html.Br(),
-                                        ],
                                         id="accuracy",
                                         className="pretty_container"
                                     ),
                                     html.Div(
-                                        [
-                                            html.H4("F1-Score",
-                                                    style={"text-align": "center", 'font-weight': 'bold'}),
-                                            html.Br(),
-                                            html.H2("0.94", style={"text-align": "center", 'font-weight': 'bold'}, ),
-                                            html.Br(),
-                                        ],
                                         id="f1score",
                                         className="pretty_container"
                                     ),
                                     html.Div(
-                                        [
-                                            html.H4("Präzision", style={"text-align": "center",'font-weight': 'bold'}),
-                                            html.Br(),
-                                            html.H5("Gutteil: 0.96", style={"text-align": "center"}, ),
-                                            html.H5("Nachbearbeiten: 0.94", style={"text-align": "center"}, ),
-                                            html.H5("Ausschuss: 1.00", style={"text-align": "center"}, ),
-                                        ],
                                         id="precision",
                                         className="pretty_container"
                                     ),
                                     html.Div(
-                                        [
-                                            html.H4("Sensitivität", style={"text-align": "center",'font-weight': 'bold'}),
-                                            html.Br(),
-                                            html.H5("Gutteil: 0.99", style={"text-align": "center"}, ),
-                                            html.H5("Nachbearbeiten: 0.79", style={"text-align": "center"}, ),
-                                            html.H5("Ausschuss: 1.00", style={"text-align": "center"}, ),
-                                        ],
                                         id="sensitivity",
                                         className="pretty_container"
                                     ),
                                 ],
-                                id="fourContainer",
+                                id="fiveContainer",
                             )
                         ],
                         id="infoContainer",
@@ -126,7 +108,22 @@ layout = html.Div([
             dbc.Col([
                 html.Div([
                     html.H5("Gelernte Entscheidungsgrenzen", style={"text-align": "center",'font-weight': 'bold'}),
-                    html.Div([dcc.Graph(id='fig3_callback'),], style={'textAlign': 'center', 'width': '100%'}),
+                    html.Br(),
+                    html.Div([
+                        dcc.Graph(id='fig3_callback'),
+                        dcc.Slider(
+                            id='dataset-slider',
+                            min=1000,
+                            max=3000,
+                            value=1000,
+                            marks={
+                                1000: '# data: 1000 ',
+                                2000: '2000',
+                                3000: '3000',
+                            },
+                            step=1000,
+                        )
+                    ], style={'textAlign': 'center', 'width': '100%'}),
                 ],
                 className = "pretty_container",),
             ],
@@ -206,14 +203,14 @@ layout = html.Div([
                                 dbc.Row([
                                     dbc.Col(
                                         html.Div([
-                                            html.Img(src=app.get_asset_url('spanen/confusion_absolute_spanen.png'))],
-                                            style = {'width': '100 %', "text-align": "center", 'diplay': "flex"},
+                                        ],
+                                            style = {'width': '100 %', "text-align": "center", 'diplay': "flex"}, id='spanen_confusion_absolute',
                                         ),
                                     ),
                                     dbc.Col(
                                         html.Div([
-                                            html.Img(src=app.get_asset_url('spanen/confusion_normalised_spanen.png'))],
-                                            style={'width': '100 %', "text-align": "center", 'diplay': "flex"},
+                                        ],
+                                            style={'width': '100 %', "text-align": "center", 'diplay': "flex"}, id ='spanen_confusion_normalised',
                                         ),
                                     ),
                                 ], align="center",)
@@ -260,71 +257,101 @@ def toggle_collapse_options(n, is_open):
           Output('fig3_callback', 'figure'),
           Output('category', 'children'),
           Output('category', 'style'),
-          Output('handlungsempfehlung', 'children')
+          Output('handlungsempfehlung', 'children'),
+          Output('accuracy', 'children'),
+          Output('f1score', 'children'),
+          Output('precision', 'children'),
+          Output('sensitivity', 'children'),
+          Output('spanen_confusion_absolute', 'children'),
+          Output('spanen_confusion_normalised', 'children'),
       ],[
-          Input('url','pathname')
+          Input('url','pathname'),
+          Input('dataset-slider','value')
        ])
-def update_inputs(pathname):
+def update_inputs(pathname, value):
 
-    print(pathname)
+    n_train = value
+
     if pathname == '/spanen':
 
-        # append global list
-        index = global_list[-1]
-        while global_list[-1] == index:
-            # erzeuge randomisierte prozessgrößen
-            draw = multinomial.rvs(1, [0.4, 0.3, 0.3])  # 0.5, 0.3, 0.2
-            index = int(np.where(draw == 1)[0])
-        global_list.append(index)
+        #   append global url list
+        old_slider_status = global_slider_spanen[-1]
+        global_slider_spanen.append(str(value))
+        new_slider_status = global_slider_spanen[-1]
+        reload_datapoint = True
+        if new_slider_status != old_slider_status:
+            print(new_slider_status, old_slider_status)
+            print("IN FOR LOOP")
+            reload_datapoint = False
 
-        # gutteil, leisung P und kraft F sind OK
-        if index == 0:
+        if reload_datapoint == True:
+            # append global index list
+            index = global_index_spanen[-1]
+            while global_index_spanen[-1] == index:
+                # erzeuge randomisierte prozessgrößen
+                draw = multinomial.rvs(1, [0.4, 0.3, 0.3])  # 0.5, 0.3, 0.2
+                index = int(np.where(draw == 1)[0])
+            global_index_spanen.append(index)
 
-            mean = [2.5, 1.5]
-            cov = [[1.4, 1], [1.2, 0.5]]
+            # gutteil, leisung P und kraft F sind OK
+            if index == 0:
 
-            bool = True
-            while bool:
-                F, P = np.random.multivariate_normal(mean, cov, 1).T
-                if F > 0.5 and F < 5 and P > 0 and P < 3:
-                    bool = False
+                mean = [2.5, 1.5]
+                cov = [[1.4, 1], [1.2, 0.5]]
 
-        # nacharbeit
-        elif index == 1:
-            draw2 = multinomial.rvs(1, [0.5, 0.5])
-            index2 = np.where(draw2 == 1)
+                bool = True
+                while bool:
+                    F, P = np.random.multivariate_normal(mean, cov, 1).T
+                    if F > 0.5 and F < 5 and P > 0 and P < 3:
+                        bool = False
 
-            # Leistung zu hoch
-            if index2[0] == 0:
-                P = expon.rvs(3.5, 0.3, size=1)
-                F = uniform.rvs(3.5, 1.5, size=1)
+            # nacharbeit
+            elif index == 1:
+                draw2 = multinomial.rvs(1, [0.5, 0.5])
+                index2 = np.where(draw2 == 1)
 
-            # Kraft zu niedrig oder zu hoch
-            elif index2[0] == 1:
+                # Leistung zu hoch
+                if index2[0] == 0:
+                    P = expon.rvs(3.5, 0.3, size=1)
+                    F = uniform.rvs(3.5, 1.5, size=1)
 
-                draw3 = multinomial.rvs(1, [0.5, 0.5])
-                index3 = np.where(draw3 == 1)
+                # Kraft zu niedrig oder zu hoch
+                elif index2[0] == 1:
 
-                # Kraft zu niedrig
-                if index3[0] == 0:
-                    P = uniform.rvs(0.5, 1, size=1)
-                    F = uniform.rvs(0, 0.25, size=1)
+                    draw3 = multinomial.rvs(1, [0.5, 0.5])
+                    index3 = np.where(draw3 == 1)
 
-                # Kraft zu hoch
-                elif index3[0] == 1:
-                    P = uniform.rvs(2, 0.5, size=1)
-                    F = expon.rvs(5.5, 0.2, size=1)
+                    # Kraft zu niedrig
+                    if index3[0] == 0:
+                        P = uniform.rvs(0.5, 1, size=1)
+                        F = uniform.rvs(0, 0.25, size=1)
 
-        # ausschuss: leistung und kraft zu hoch
-        elif index == 2:
-            P = expon.rvs(3.5, 0.3, size=1)  # loc, scale, size
-            F = expon.rvs(5.5, 0.2, size=1)
+                    # Kraft zu hoch
+                    elif index3[0] == 1:
+                        P = uniform.rvs(2, 0.5, size=1)
+                        F = expon.rvs(5.5, 0.2, size=1)
+
+            # ausschuss: leistung und kraft zu hoch
+            elif index == 2:
+                P = expon.rvs(3.5, 0.3, size=1)  # loc, scale, size
+                F = expon.rvs(5.5, 0.2, size=1)
+
+            global_P_list.append(P)
+            global_F_list.append(F)
+
+        # load confusion matrix
+        spanen_confusion_absolute_callback = html.Div([
+            html.Img(src=app.get_asset_url('spanen/spanen_confusion_absolute_' + str(n_train) + '.png'))
+        ],)
+        spanen_confusion_normalised_callback = html.Div([
+            html.Img(src=app.get_asset_url('spanen/spanen_confusion_normalised_' + str(n_train) + '.png'))
+        ],)
 
         # plot für prozessgrößen
         fig1_callback = go.Figure()
 
         fig1_callback.add_trace(go.Indicator(
-            mode="number+gauge", value=F[0], number={'font': {'size': 30}},
+            mode="number+gauge", value=global_F_list[-1][0], number={'font': {'size': 30}},
             # delta = {'reference': 200},
             domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
             title={'text': "Kraft in kN", 'font': {'size': 20}},
@@ -350,7 +377,7 @@ def update_inputs(pathname):
 
         fig2_callback = go.Figure()
         fig2_callback.add_trace(go.Indicator(
-            mode="number+gauge", value=P[0], number={'font': {'size': 30}},
+            mode="number+gauge", value=global_P_list[-1][0], number={'font': {'size': 30}},
             # delta = {'reference': 200},
             domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
             title={'text': "Leistung in kW", 'font': {'size': 20}},
@@ -370,7 +397,7 @@ def update_inputs(pathname):
         )
         fig2_callback.update_layout(autosize=True, height=150, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
                                     paper_bgcolor="#f9f9f9", )
-        n_train = 1000
+
         with open("assets/spanen/spanen_knn_data_"+str(n_train)+".csv") as mycsv:
             count = 0
             for line in mycsv:
@@ -389,6 +416,8 @@ def update_inputs(pathname):
                 if count == 6:
                     data_train_load = line
                 if count == 7:
+                    report = line
+                if count == 8:
                     break
                 count += 1
 
@@ -419,6 +448,57 @@ def update_inputs(pathname):
 
         Z_load = re.sub('\s+', '', Z_load)
         z_cont = np.asarray(ast.literal_eval(Z_load))
+
+        report = re.sub('\s+', '', report)
+        report = ast.literal_eval(report)
+
+        # get accuracy metrics from report
+        accuracy = np.round(report['accuracy'], 2)
+        f1_score = np.round(report['macroavg']['f1-score'], 2)
+
+        precision_gutteil = np.round(report['0.0']['precision'], 2)
+        sensitivity_gutteil = np.round(report['0.0']['recall'], 2)
+        precision_nachbearbeiten = np.round(report['1.0']['precision'], 2)
+        sensitivity_nachbearbeiten = np.round(report['1.0']['recall'], 2)
+        precision_ausschuss = np.round(report['2.0']['precision'], 2)
+        sensitivity_ausschuss = np.round(report['2.0']['recall'], 2)
+
+        # update info boxes
+        accuracy_callback = html.Div(
+            [
+                html.H4("Genauigkeit", style={"text-align": "center", 'font-weight': 'bold'}),
+                html.Br(),
+                html.H2(str(accuracy), style={"text-align": "center", 'font-weight': 'bold'}, ),
+                html.Br(),
+            ],
+        ),
+        f1_score_callback = html.Div(
+            [
+                html.H4("F1-Score",
+                        style={"text-align": "center", 'font-weight': 'bold'}),
+                html.Br(),
+                html.H2(str(f1_score), style={"text-align": "center", 'font-weight': 'bold'}, ),
+                html.Br(),
+            ],
+        ),
+        precision_callback = html.Div(
+            [
+                html.H4("Präzision", style={"text-align": "center", 'font-weight': 'bold'}),
+                html.Br(),
+                html.H5("Gutteil: " + str(precision_gutteil), style={"text-align": "center"}, ),
+                html.H5("Nachbearbeiten: " + str(precision_nachbearbeiten), style={"text-align": "center"}, ),
+                html.H5("Ausschuss: " + str(precision_ausschuss), style={"text-align": "center"}, ),
+            ],
+        ),
+        sensitivity_callback = html.Div(
+            [
+                html.H4("Sensitivität", style={"text-align": "center", 'font-weight': 'bold'}),
+                html.Br(),
+                html.H5("Gutteil: " + str(sensitivity_gutteil), style={"text-align": "center"}, ),
+                html.H5("Nachbearbeiten: " + str(sensitivity_nachbearbeiten), style={"text-align": "center"}, ),
+                html.H5("Ausschuss: " + str(sensitivity_ausschuss), style={"text-align": "center"}, ),
+            ],
+        ),
 
         # dataframe for scatter data
         df_test = pandas.DataFrame({'x_test_scatter': x_test_scatter, 'y_test_scatter': y_test_scatter, 'z_test_scatter': z_test_scatter})
@@ -484,8 +564,8 @@ def update_inputs(pathname):
 
         # scatter plot of single new test point
         fig3_callback.add_trace(go.Scatter(
-            x=np.asarray(F[0]),
-            y=np.asarray(P[0]),
+            x=np.asarray(global_F_list[-1][0]),
+            y=np.asarray(global_P_list[-1][0]),
             mode='markers',
             name='Prozessparameter',
             marker_color='magenta',
@@ -501,7 +581,7 @@ def update_inputs(pathname):
         ))
 
         fig3_callback.update_layout(
-            margin = {'l': 5, 'r': 5, 't': 15, 'b': 5},
+            margin = {'l': 15, 'r': 15, 't': 15, 'b': 15},
             xaxis_title='Kraft in kN',
             yaxis_title='Leistung in kW',
             font=dict(
@@ -509,15 +589,18 @@ def update_inputs(pathname):
             ),
             xaxis=dict(
                 range=[0,8]
-            )
+            ),
+            yaxis = dict(
+            range=[0, 6]
+        )
         )
 
         # load model from pickle
         import pickle
 
         clf = pickle.load(open("assets/spanen/spanen_knn_model_"+str(n_train)+".sav", 'rb'))
-        z = clf.predict(np.c_[F[0], P[0]])
-        print('z',z)
+        z = clf.predict(np.c_[global_F_list[-1][0], global_P_list[-1][0]])
+
         if z[0] == 0:
             cat_string = "Gutteil"
             cat_color = "green"
@@ -565,7 +648,9 @@ def update_inputs(pathname):
 
         style = {"background-color": cat_color, 'display': 'inline-block', "text-align": "center", 'vertical-align': 'middle'}
 
-        return [fig1_callback, fig2_callback, fig3_callback, category, style, empfehlung_alert]
+        return [fig1_callback, fig2_callback, fig3_callback, category, style, empfehlung_alert, accuracy_callback,
+                f1_score_callback, precision_callback, sensitivity_callback,
+                spanen_confusion_absolute_callback, spanen_confusion_normalised_callback]
 
     else:
         fig1_callback = go.Figure()
@@ -576,5 +661,13 @@ def update_inputs(pathname):
         category= None
         style = None
         empfehlung_alert = None
+        accuracy_callback = None
+        f1_score_callback = None
+        precision_callback = None
+        sensitivity_callback = None
+        spanen_confusion_absolute_callback = None
+        spanen_confusion_normalised_callback = None
 
-        return [fig1_callback, fig2_callback, fig3_callback, category, style, empfehlung_alert]
+        return [fig1_callback, fig2_callback, fig3_callback, category, style, empfehlung_alert, accuracy_callback,
+                f1_score_callback, precision_callback, sensitivity_callback,
+                spanen_confusion_absolute_callback, spanen_confusion_normalised_callback]
