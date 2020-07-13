@@ -336,7 +336,7 @@ def update_inputs(pathname, value):
                 index = int(np.where(draw == 1)[0])
             global_index_lackieren.append(index)
 
-            # gutteil, leisung P und kraft F sind OK
+            # gutteil, leisung P und Kraft F sind OK
             # if index == 0:
 
             mean = [1.5, 6, 32]
