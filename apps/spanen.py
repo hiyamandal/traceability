@@ -1,3 +1,5 @@
+import dash as dash
+
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
@@ -271,7 +273,10 @@ def toggle_collapse_options(n, is_open):
 def update_inputs(pathname, value):
 
     n_train = value
-
+    ctx = dash.callback_context
+    print(ctx.triggered)
+    print(ctx.inputs)
+    print(ctx.states)
     if pathname == '/spanen':
 
         # with open("assets/spanen/spanen_knn_data_" + str(n_train) + ".csv") as mycsv:
@@ -286,15 +291,14 @@ def update_inputs(pathname, value):
         # file.write(str(value) + "\n")
         # file.close()
 
-
         old_slider_status = global_slider_spanen[-1]
         global_slider_spanen.append(str(value))
         new_slider_status = global_slider_spanen[-1]
-        reload_datapoint = True
-        if new_slider_status != old_slider_status:
-            reload_datapoint = False
+        reload_datapoint = False
+        if new_slider_status == old_slider_status:
+            reload_datapoint = True
 
-        if reload_datapoint == True:
+        if reload_datapoint == True or ctx.triggered[0]['value'] == None:
             # append global index list
             index = global_index_spanen[-1]
             while global_index_spanen[-1] == index:
