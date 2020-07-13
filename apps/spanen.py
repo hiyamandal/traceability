@@ -49,9 +49,9 @@ config = dict({'scrollZoom': True})
 layout = html.Div([
     commonmodules.get_header(),
     html.Br(),
-    html.H3('Station Spanen', style={'font-weight': 'bold', 'text-decoration': 'underline'}),
+    html.H4('Station Spanen', style={'font-weight': 'bold', 'text-decoration': 'underline'}),
     html.Hr(),
-    html.H4('Klassifizierungsergebnisse', style={'font-weight': 'bold'}),
+    html.H3('Klassifizierungsergebnisse', style={'font-weight': 'bold'}),
     html.Br(),
     html.Div([
         dbc.Row([
@@ -103,13 +103,14 @@ layout = html.Div([
                         id="infoContainer",
                 ),
             ],
-            width=7),
+            width=6),
             dbc.Col([
                 html.Div([
                     html.H5("Gelernte Entscheidungsgrenzen", style={"text-align": "center",'font-weight': 'bold'}),
                     html.Br(),
                     html.Div([
                         dcc.Graph(id='fig3_callback'),
+                        html.H5("Anzahl an Datenpunkten:", style={"text-align": "center",'font-weight': 'bold'}),
                         dcc.Slider(
                             id='dataset-slider',
                             min=1000,
@@ -126,13 +127,13 @@ layout = html.Div([
                 ],
                 className = "pretty_container",),
             ],
-            width=5),
+            width=6),
         ],
         align="center",
         ),
     ], className="flex-hd-row, flex-column align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"), # d-flex
     html.Hr(style={'height': '30px', 'font-weight': 'bold'}),
-    html.H4('Handlungsempfehlung', style={'font-weight': 'bold'}),
+    html.H5('Handlungsempfehlung', style={'font-weight': 'bold'}),
     html.Br(),
     html.Div(
         className="flex-hd-row, flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm", # d-flex
@@ -183,7 +184,7 @@ layout = html.Div([
     ],
     ),
     html.Hr(),
-    html.H4('Detailinformationen', style={'font-weight': 'bold'}),
+    html.H5('Detailinformationen', style={'font-weight': 'bold'}),
     html.Br(),
     html.Div(
         [
@@ -217,7 +218,7 @@ layout = html.Div([
                         ]),
                         dcc.Tab(label='Wirtschaftliche Bewertung', style=tab_style, selected_style=tab_selected_style, children=[
                             html.Div([
-                                html.H5("Wirtschaftliche Bewertung einfügen.")
+                                html.H6("Wirtschaftliche Bewertung einfügen.")
                             ], className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
                         ]),
                     ], style=tabs_styles),
@@ -279,8 +280,6 @@ def update_inputs(pathname, value):
         new_slider_status = global_slider_spanen[-1]
         reload_datapoint = False
         if new_slider_status == old_slider_status:
-            print(new_slider_status, old_slider_status)
-            print("IN FOR LOOP")
             reload_datapoint = True
 
         if reload_datapoint == True:
@@ -465,37 +464,37 @@ def update_inputs(pathname, value):
         # update info boxes
         accuracy_callback = html.Div(
             [
-                html.H4("Genauigkeit", style={"text-align": "center", 'font-weight': 'bold'}),
+                html.H5("Genauigkeit", style={"text-align": "center", 'font-weight': 'bold'}),
                 html.Br(),
-                html.H2(str(accuracy), style={"text-align": "center", 'font-weight': 'bold'}, ),
+                html.H3(str(accuracy), style={"text-align": "center", 'font-weight': 'bold'}, ),
                 html.Br(),
             ],
         ),
         f1_score_callback = html.Div(
             [
-                html.H4("F1-Score",
+                html.H5("F1-Score",
                         style={"text-align": "center", 'font-weight': 'bold'}),
                 html.Br(),
-                html.H2(str(f1_score), style={"text-align": "center", 'font-weight': 'bold'}, ),
+                html.H3(str(f1_score), style={"text-align": "center", 'font-weight': 'bold'}, ),
                 html.Br(),
             ],
         ),
         precision_callback = html.Div(
             [
-                html.H4("Präzision", style={"text-align": "center", 'font-weight': 'bold'}),
+                html.H5("Präzision", style={"text-align": "center", 'font-weight': 'bold'}),
                 html.Br(),
-                html.H5("Gutteil: " + str(precision_gutteil), style={"text-align": "center"}, ),
-                html.H5("Nachbearbeiten: " + str(precision_nachbearbeiten), style={"text-align": "center"}, ),
-                html.H5("Ausschuss: " + str(precision_ausschuss), style={"text-align": "center"}, ),
+                html.H6("Gutteil: " + str(precision_gutteil), style={"text-align": "center"}, ),
+                html.H6("Nachbearbeiten: " + str(precision_nachbearbeiten), style={"text-align": "center"}, ),
+                html.H6("Ausschuss: " + str(precision_ausschuss), style={"text-align": "center"}, ),
             ],
         ),
         sensitivity_callback = html.Div(
             [
-                html.H4("Sensitivität", style={"text-align": "center", 'font-weight': 'bold'}),
+                html.H5("Sensitivität", style={"text-align": "center", 'font-weight': 'bold'}),
                 html.Br(),
-                html.H5("Gutteil: " + str(sensitivity_gutteil), style={"text-align": "center"}, ),
-                html.H5("Nachbearbeiten: " + str(sensitivity_nachbearbeiten), style={"text-align": "center"}, ),
-                html.H5("Ausschuss: " + str(sensitivity_ausschuss), style={"text-align": "center"}, ),
+                html.H6("Gutteil: " + str(sensitivity_gutteil), style={"text-align": "center"}, ),
+                html.H6("Nachbearbeiten: " + str(sensitivity_nachbearbeiten), style={"text-align": "center"}, ),
+                html.H6("Ausschuss: " + str(sensitivity_ausschuss), style={"text-align": "center"}, ),
             ],
         ),
 
@@ -640,7 +639,7 @@ def update_inputs(pathname, value):
                             html.Br(),
                             html.Br(),
                             html.Br(),
-                            html.H4(cat_string, style={"text-align": "center", "color": "white",
+                            html.H5(cat_string, style={"text-align": "center", "color": "white",
                                                    'font-weight': 'bold', 'vertical-align': 'middle'}, id="3cat"),
                          ],
                     )

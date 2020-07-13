@@ -8,7 +8,7 @@ from app import app
 def get_header():
     header = html.Div([
         html.Div([
-            html.H1(
+            html.H2(
                 'Machine Learning Applikation zur automatisierten Qualitätssicherung')
         ], className="twelve columns"),
     ], className="row gs-header gs-text-header")
@@ -21,10 +21,9 @@ def get_sidebar():
         "top": 0,
         "left": 0,
         "bottom": 0,
-        "width": "24rem",
+        "width": "20rem",
         "padding": "3rem 2rem",
         "background-color": "#f8f9fa",
-        'font': {'size': 30}
     }
     sidebar = html.Div(
         [
@@ -32,10 +31,10 @@ def get_sidebar():
             html.Hr(),
             dbc.Nav(
                 [
-                    dbc.NavLink('Station Anmeldung   ', href='/', id="page-1-link", style={'font-size': 20}),
-                    dbc.NavLink('Station Spanen   ', href='/spanen', id="page-2-link", style={'font-size': 20}),
-                    dbc.NavLink('Station Lackieren    ', href='/lackieren', id="page-3-link", style={'font-size': 20}),
-                    dbc.NavLink('Station Montage   ', href='/montage', id="page-4-link", style={'font-size': 20}),
+                    dbc.NavLink('Station Anmeldung   ', href='/', id="page-1-link", style={'font-size': 15}),
+                    dbc.NavLink('Station Spanen   ', href='/spanen', id="page-2-link", style={'font-size': 15}),
+                    dbc.NavLink('Station Lackieren    ', href='/lackieren', id="page-3-link", style={'font-size': 15}),
+                    dbc.NavLink('Station Montage   ', href='/montage', id="page-4-link", style={'font-size': 15}),
                 ],
                 vertical=True,
                 pills=True,
