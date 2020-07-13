@@ -12,6 +12,7 @@ from app import app
 
 from scipy.stats import multinomial, uniform, expon
 import numpy as np
+import pickle
 
 global_index_lackieren = [0]
 global_slider_lackieren = ['2000']
@@ -316,6 +317,8 @@ def toggle_collapse_options(n, is_open):
 def update_inputs(pathname, value):
 
     n_train = value
+    # load model from pickle
+    clf = pickle.load(open("assets/lackieren/lackieren_knn_model_" + str(n_train) + ".sav", 'rb'))
 
     if pathname == '/lackieren':
 
@@ -331,58 +334,21 @@ def update_inputs(pathname, value):
             # append global index list
             index = global_index_lackieren[-1]
             while global_index_lackieren[-1] == index:
-                # erzeuge randomisierte prozessgrößen
-                draw = multinomial.rvs(1, [0.4, 0.3, 0.3])  # 0.5, 0.3, 0.2
-                index = int(np.where(draw == 1)[0])
+
+                mean = [1.5, 6, 32]
+                cov = [[1.5, 0, 0], [0, 5, 0], [0, 0, 120]] # 1,3,100
+
+                L, D, T = np.random.multivariate_normal(mean, cov, 1).T
+                L = np.abs(L)
+                D = np.abs(D)
+                T = np.abs(T)
+
+                # z = clf.predict(
+                #     np.c_[global_L_list_lackieren[-1][0], global_D_list_lackieren[-1][0], global_T_list_lackieren[-1][0]])
+                z = clf.predict(np.c_[L, D, T])
+                index = int(z)
+                
             global_index_lackieren.append(index)
-
-            # gutteil, leisung P und Kraft F sind OK
-            # if index == 0:
-
-            mean = [1.5, 6, 32]
-            cov = [[1.5, 0, 0], [0, 5, 0], [0, 0, 120]] # 1,3,100
-
-            L, D, T = np.random.multivariate_normal(mean, cov, 1).T
-            L = np.abs(L)
-            D = np.abs(D)
-            T = np.abs(T)
-
-            # bool = True
-            # while bool:
-            #     L, D, T = np.random.multivariate_normal(mean, cov, 1).T
-            #     if L > 0 and L < 3 and D > 4 and D < 8 and T > 18 and T < 45:
-            #         bool = False
-
-            # # nacharbeit
-            # elif index == 1:
-            #     draw2 = multinomial.rvs(1, [0.5, 0.5])
-            #     index2 = np.where(draw2 == 1)
-            #
-            #     # Leistung zu hoch
-            #     if index2[0] == 0:
-            #         P = expon.rvs(3.5, 0.3, size=1)
-            #         F = uniform.rvs(3.5, 1.5, size=1)
-            #
-            #     # Kraft zu niedrig oder zu hoch
-            #     elif index2[0] == 1:
-            #
-            #         draw3 = multinomial.rvs(1, [0.5, 0.5])
-            #         index3 = np.where(draw3 == 1)
-            #
-            #         # Kraft zu niedrig
-            #         if index3[0] == 0:
-            #             P = uniform.rvs(0.5, 1, size=1)
-            #             F = uniform.rvs(0, 0.25, size=1)
-            #
-            #         # Kraft zu hoch
-            #         elif index3[0] == 1:
-            #             P = uniform.rvs(2, 0.5, size=1)
-            #             F = expon.rvs(5.5, 0.2, size=1)
-            #
-            # # ausschuss: leistung und kraft zu hoch
-            # elif index == 2:
-            #     P = expon.rvs(3.5, 0.3, size=1)  # loc, scale, size
-            #     F = expon.rvs(5.5, 0.2, size=1)
 
             global_L_list_lackieren.append(L)
             global_D_list_lackieren.append(D)
@@ -681,12 +647,6 @@ def update_inputs(pathname, value):
         #         x=0.70
         #     )
         # )
-
-        # load model from pickle
-        import pickle
-
-        clf = pickle.load(open("assets/lackieren/lackieren_knn_model_"+str(n_train)+".sav", 'rb'))
-        z = clf.predict(np.c_[global_L_list_lackieren[-1][0], global_D_list_lackieren[-1][0], global_T_list_lackieren[-1][0]])
 
         if z[0] == 0:
             cat_string = "Gutteil"
