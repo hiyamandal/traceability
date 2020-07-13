@@ -343,16 +343,18 @@ def update_inputs(pathname, value):
                 D = np.abs(D)
                 T = np.abs(T)
 
-                # z = clf.predict(
-                #     np.c_[global_L_list_lackieren[-1][0], global_D_list_lackieren[-1][0], global_T_list_lackieren[-1][0]])
                 z = clf.predict(np.c_[L, D, T])
                 index = int(z)
-                
+
             global_index_lackieren.append(index)
 
             global_L_list_lackieren.append(L)
             global_D_list_lackieren.append(D)
             global_T_list_lackieren.append(T)
+
+        # do prediction
+        z = clf.predict(
+            np.c_[global_L_list_lackieren[-1][0], global_D_list_lackieren[-1][0], global_T_list_lackieren[-1][0]])
 
         # load confusion matrix
         lackieren_confusion_absolute_callback = html.Div([
