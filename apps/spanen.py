@@ -131,7 +131,7 @@ layout = html.Div([
         ],
         align="center",
         ),#flex-hd-row, flex-column
-    ], className="  d-flex align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"), # d-flex
+    ], className="flex-hd-row, flex-column d-flex align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"), # d-flex
     html.Hr(style={'height': '30px', 'font-weight': 'bold'}),
     html.H5('Handlungsempfehlung', style={'font-weight': 'bold'}),
     html.Br(),
