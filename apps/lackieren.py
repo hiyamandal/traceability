@@ -327,9 +327,9 @@ def update_inputs(pathname, value):
         old_slider_status = global_slider_lackieren[-1]
         global_slider_lackieren.append(str(value))
         new_slider_status = global_slider_lackieren[-1]
-        reload_datapoint = False
-        # if new_slider_status == old_slider_status:
-        #     reload_datapoint = True
+        reload_datapoint = True
+        if new_slider_status != old_slider_status:
+            reload_datapoint = False
 
         if reload_datapoint == True:
             # append global index list
