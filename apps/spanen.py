@@ -298,7 +298,7 @@ def update_inputs(pathname, value):
         if new_slider_status == old_slider_status:
             reload_datapoint = True
 
-        if reload_datapoint == True or ctx.triggered[0]['value'] == None:
+        if ctx.triggered[0]['value'] == None:
             # append global index list
             index = global_index_spanen[-1]
             while global_index_spanen[-1] == index:
