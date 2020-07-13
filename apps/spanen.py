@@ -274,7 +274,19 @@ def update_inputs(pathname, value):
 
     if pathname == '/spanen':
 
-        #   append global url list
+        # with open("assets/spanen/spanen_knn_data_" + str(n_train) + ".csv") as mycsv:
+        #     for line in mycsv:
+        #         old_slider_status = line
+        # new_slider_status = value
+        # if new_slider_status != old_slider_status:
+        #     reload_datapoint = False
+        #
+        # #   append global url list
+        # file = open("temp_spanen_slider.csv", "w+")
+        # file.write(str(value) + "\n")
+        # file.close()
+
+
         old_slider_status = global_slider_spanen[-1]
         global_slider_spanen.append(str(value))
         new_slider_status = global_slider_spanen[-1]
