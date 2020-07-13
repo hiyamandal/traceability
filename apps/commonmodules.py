@@ -27,7 +27,7 @@ def get_sidebar():
     }
     sidebar = html.Div(
         [
-            html.Div(html.Img(src=app.get_asset_url('ptw_web4.png'), style={'height': '5vh'})),
+            html.Div(html.Img(src=app.get_asset_url('ptw_web4.png'), style={'height': '7vh'})),
             html.Hr(),
             dbc.Nav(
                 [
