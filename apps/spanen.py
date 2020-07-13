@@ -15,8 +15,8 @@ import numpy as np
 
 global_index_spanen = [0]
 global_slider_spanen = ['1000']
-global_P_list = []
-global_F_list = []
+global_P_list_spanen = []
+global_F_list_spanen = []
 
 # tab styles
 tabs_styles = {
@@ -59,14 +59,14 @@ layout = html.Div([
                 html.Div([
                     dbc.Row([
                         html.Div([
-                            dcc.Graph(id='fig1_callback'),
+                            dcc.Graph(id='fig1_callback_spanen'),
                         ], style={'textAlign': 'center', 'width': '100%'}),
                     ]),
 
                     dbc.Row([
                         html.Div(
                             [
-                                dcc.Graph(id='fig2_callback'),
+                                dcc.Graph(id='fig2_callback_spanen'),
                              ], style={'textAlign': 'center', 'width': '100%'}),
 
                     ]),
@@ -109,10 +109,10 @@ layout = html.Div([
                     html.H5("Gelernte Entscheidungsgrenzen", style={"text-align": "center",'font-weight': 'bold'}),
                     html.Br(),
                     html.Div([
-                        dcc.Graph(id='fig3_callback'),
-                        html.H5("Anzahl an Datenpunkten:", style={"text-align": "center",'font-weight': 'bold'}),
+                        dcc.Graph(id='fig3_callback_spanen'),
+                        html.H6("Anzahl an Datenpunkten (Training + Test):", style={"text-align": "center",'font-weight': 'bold'}),
                         dcc.Slider(
-                            id='dataset-slider',
+                            id='dataset-slider_spanen',
                             min=1000,
                             max=3000,
                             value=1000,
@@ -137,13 +137,13 @@ layout = html.Div([
     html.Br(),
     html.Div(
         className="flex-hd-row, flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm", # d-flex
-        id="handlungsempfehlung"),
+        id="handlungsempfehlung_spanen"),
     html.Br(),
     html.Div(
     [
         dbc.Button(
             "Weitere Handlungsoptionen",
-            id="collapse-button-options",
+            id="collapse-button-options_spanen",
             className="mb-3",
             color="primary",
             style={'font-size': '100%'},
@@ -179,7 +179,7 @@ layout = html.Div([
                     ]
                 ),
             ], className="flex-hd-row, flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  #  d-flex
-            id="collapse-options",
+            id="collapse-options_spanen",
         ),
     ],
     ),
@@ -204,13 +204,13 @@ layout = html.Div([
                                     dbc.Col(
                                         html.Div([
                                         ],
-                                            style = {'width': '100 %', "text-align": "center", 'diplay': "flex"}, id='spanen_confusion_absolute',
+                                            style = {'width': '100 %', "text-align": "center", 'display': "flex"}, id='spanen_confusion_absolute',
                                         ),
                                     ),
                                     dbc.Col(
                                         html.Div([
                                         ],
-                                            style={'width': '100 %', "text-align": "center", 'diplay': "flex"}, id ='spanen_confusion_normalised',
+                                            style={'width': '100 %', "text-align": "center", 'display': "flex"}, id ='spanen_confusion_normalised',
                                         ),
                                     ),
                                 ], align="center",)
@@ -232,9 +232,9 @@ layout = html.Div([
 
 # callbacks
 @app.callback(
-    Output("collapse-options", "is_open"),
-    [Input("collapse-button-options", "n_clicks")],
-    [State("collapse-options", "is_open")],
+    Output("collapse-options_spanen", "is_open"),
+    [Input("collapse-button-options_spanen", "n_clicks")],
+    [State("collapse-options_spanen", "is_open")],
 )
 def toggle_collapse_options(n, is_open):
     if n:
@@ -252,12 +252,12 @@ def toggle_collapse_options(n, is_open):
     return is_open
 
 @app.callback([
-          Output('fig1_callback', 'figure'),
-          Output('fig2_callback', 'figure'),
-          Output('fig3_callback', 'figure'),
+          Output('fig1_callback_spanen', 'figure'),
+          Output('fig2_callback_spanen', 'figure'),
+          Output('fig3_callback_spanen', 'figure'),
           Output('category', 'children'),
           Output('category', 'style'),
-          Output('handlungsempfehlung', 'children'),
+          Output('handlungsempfehlung_spanen', 'children'),
           Output('accuracy', 'children'),
           Output('f1score', 'children'),
           Output('precision', 'children'),
@@ -266,7 +266,7 @@ def toggle_collapse_options(n, is_open):
           Output('spanen_confusion_normalised', 'children'),
       ],[
           Input('url','pathname'),
-          Input('dataset-slider','value')
+          Input('dataset-slider_spanen','value')
        ])
 def update_inputs(pathname, value):
 
@@ -334,8 +334,8 @@ def update_inputs(pathname, value):
                 P = expon.rvs(3.5, 0.3, size=1)  # loc, scale, size
                 F = expon.rvs(5.5, 0.2, size=1)
 
-            global_P_list.append(P)
-            global_F_list.append(F)
+            global_P_list_spanen.append(P)
+            global_F_list_spanen.append(F)
 
         # load confusion matrix
         spanen_confusion_absolute_callback = html.Div([
@@ -349,7 +349,7 @@ def update_inputs(pathname, value):
         fig1_callback = go.Figure()
 
         fig1_callback.add_trace(go.Indicator(
-            mode="number+gauge", value=global_F_list[-1][0], number={'font': {'size': 30}},
+            mode="number+gauge", value=global_F_list_spanen[-1][0], number={'font': {'size': 30}},
             # delta = {'reference': 200},
             domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
             title={'text': "Kraft in kN", 'font': {'size': 20}},
@@ -375,7 +375,7 @@ def update_inputs(pathname, value):
 
         fig2_callback = go.Figure()
         fig2_callback.add_trace(go.Indicator(
-            mode="number+gauge", value=global_P_list[-1][0], number={'font': {'size': 30}},
+            mode="number+gauge", value=global_P_list_spanen[-1][0], number={'font': {'size': 30}},
             # delta = {'reference': 200},
             domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
             title={'text': "Leistung in kW", 'font': {'size': 20}},
@@ -562,8 +562,8 @@ def update_inputs(pathname, value):
 
         # scatter plot of single new test point
         fig3_callback.add_trace(go.Scatter(
-            x=np.asarray(global_F_list[-1][0]),
-            y=np.asarray(global_P_list[-1][0]),
+            x=np.asarray(global_F_list_spanen[-1][0]),
+            y=np.asarray(global_P_list_spanen[-1][0]),
             mode='markers',
             name='Prozessparameter',
             marker_color='magenta',
@@ -597,7 +597,7 @@ def update_inputs(pathname, value):
         import pickle
 
         clf = pickle.load(open("assets/spanen/spanen_knn_model_"+str(n_train)+".sav", 'rb'))
-        z = clf.predict(np.c_[global_F_list[-1][0], global_P_list[-1][0]])
+        z = clf.predict(np.c_[global_F_list_spanen[-1][0], global_P_list_spanen[-1][0]])
 
         if z[0] == 0:
             cat_string = "Gutteil"

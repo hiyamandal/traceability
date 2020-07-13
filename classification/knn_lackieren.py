@@ -8,7 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import pickle
 
-n_train = 3000
+n_train = 10000
 n_neighbors = 5
 
 # script for generating data
@@ -143,6 +143,14 @@ def plotting(n_train, n_neighbors):
     X_train, X_test, y_train, y_test = train_test_split(X, cat, test_size=.3,
                                                         random_state=0)
 
+    # we create an instance of Neighbours Classifier and fit the data.
+    weights = 'uniform' # for weights in ['uniform', 'distance']:
+    classifier = neighbors.KNeighborsClassifier(n_neighbors, weights=weights)
+    clf = classifier.fit(X_train, y_train)
+
+    # save model to binary with pickle
+    pickle.dump(clf, open("lackieren_knn_model_" + str(n_train) + ".sav", 'wb'))
+
     # plot training data with labels
     fig1 = pyplot.figure()
     ax = Axes3D(fig1)
@@ -159,15 +167,42 @@ def plotting(n_train, n_neighbors):
     ax.set_ylabel('Druck in bar')
     ax.set_zlabel('Temperatur in °C')
     ax.set_title('Trainingsdaten Station Lackieren')
-    plt.show()
+    # plt.show()
+
+    # do prediction on test data
+    from sklearn.metrics import confusion_matrix
+    y_pred = clf.predict(X_test)
+
+    # plot a classification report
+    from sklearn.metrics import classification_report
+    report = classification_report(y_test, y_pred, output_dict=True)
+    print(report)
+    print(report['0.0']['precision'])
 
     # save data for scatter in file
     file = open("lackieren_knn_data_" + str(n_train) + ".csv", "w+")
-    file.write(str(cat.tolist()) + "\n")
-    file.write(str(L.tolist()) + "\n")
-    file.write(str(D.tolist()) + "\n")
-    file.write(str(T.tolist()) + "\n")
+    file.write(str(y_test.tolist()) + "\n")
+    file.write(str(X_test.tolist()) + "\n")
+    file.write(str(y_train.tolist()) + "\n")
+    file.write(str(X_train.tolist()) + "\n")
+    file.write(str(report) + "\n")
+    # file.write(str(cat.tolist()) + "\n")
+    # file.write(str(L.tolist()) + "\n")
+    # file.write(str(D.tolist()) + "\n")
+    # file.write(str(T.tolist()) + "\n")
+
     file.close()
+
+    # file = open("spanen_knn_data_"+str(n_train)+".csv", "w+")
+    # file.write(str(y_test.tolist()) + "\n")
+    # file.write(str(X_test.tolist()) + "\n")  # +","+str(xx_list)+","+str(yy_list)+","+str(Z_list))
+    # file.write(str(xx_list) + "\n")
+    # file.write(str(yy_list) + "\n")
+    # file.write(str(Z_list) + "\n")
+    # file.write(str(y_train.tolist()) + "\n")
+    # file.write(str(X_train.tolist()) + "\n")
+    # file.write(str(report) + "\n")
+    # file.close()
 
     h = .04  # step size in the mesh
     h2 = .2
@@ -175,15 +210,6 @@ def plotting(n_train, n_neighbors):
     # Create color maps
     cmap_light = ListedColormap(['green', 'orange', 'red'])
     cmap_bold = ListedColormap(['darkgreen', 'darkorange', 'darkred'])
-
-    weights = 'uniform' # for weights in ['uniform', 'distance']:
-
-    # we create an instance of Neighbours Classifier and fit the data.
-    classifier = neighbors.KNeighborsClassifier(n_neighbors, weights=weights)
-    clf = classifier.fit(X_train, y_train)
-
-    # save model to binary with pickle
-    pickle.dump(clf, open("lackieren_knn_model_" + str(n_train) + ".sav", 'wb'))
 
     # Plot the decision boundary. For that, we will assign a color to each
     # point in the mesh [x_min, x_max]x[y_min, y_max].
@@ -214,15 +240,12 @@ def plotting(n_train, n_neighbors):
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
 
-    plt.title("3-Class classification (k = %i, weights = '%s')"
-              % (n_neighbors, weights))
-
     plt.xlabel('Leistung in kN')
     plt.ylabel('Druck in bar')
-    title = 'Klassifizierung Station Lackieren, Temperatur = 32 °C'
+    title = 'Klassifizierung für Temperatur = 32 °C'
     ax2.set_title(title, weight='bold', pad=20)
-    plt.savefig('lackieren_train_temp.png')
-    plt.show()
+    plt.savefig('lackieren_train_temp_'+str(n_train)+'.png')
+    # plt.show()
 
     # XZ prediction
     xx = xx_planeXZ
@@ -239,15 +262,13 @@ def plotting(n_train, n_neighbors):
     plt.xlim(xx.min(), xx.max())
     plt.ylim(zz.min(), zz.max())
 
-    plt.title("3-Class classification (k = %i, weights = '%s')"
-              % (n_neighbors, weights))
 
     plt.xlabel('Leistung in kW')
     plt.ylabel('Temperatur in Grad Celsius')
-    title = 'Klassifizierung Station Lackieren, Druck = 6 bar'
+    title = 'Klassifizierung für Druck = 6 bar'
     ax3.set_title(title, weight='bold', pad=20)
-    plt.savefig('lackieren_train_pressure.png')
-    plt.show()
+    plt.savefig('lackieren_train_pressure_'+str(n_train)+'.png')
+    # plt.show()
 
     # YZ prediction
     xx = np.ones(np.shape(yy_planeYZ)) * 1.5
@@ -257,22 +278,19 @@ def plotting(n_train, n_neighbors):
     V = clf.predict(np.c_[xx.ravel(), yy.ravel(), zz.ravel()])
     V = V.reshape(xx.shape)
 
-    plt.figure()
-    ax4 = fig2.add_subplot(111)
+    fig4 = plt.figure()
+    ax4 = fig4.add_subplot(111)
     plt.pcolormesh(yy, zz, V, cmap=cmap_light)
 
     plt.xlim(yy.min(), yy.max())
     plt.ylim(zz.min(), zz.max())
 
-    plt.title("3-Class classification (k = %i, weights = '%s')"
-              % (n_neighbors, weights))
-
     plt.xlabel('Druck in bar')
     plt.ylabel('Temperatur in Grad Celsius')
-    title = 'Klassifizierung Station Lackieren, Leistung = 1.5kW'
+    title = 'Klassifizierung für Leistung = 1.5kW'
     ax4.set_title(title, weight='bold', pad=20)
-    plt.savefig('lackieren_train_power.png')
-    plt.show()
+    plt.savefig('lackieren_train_power_'+str(n_train)+'.png')
+    # plt.show()
 
     # Confusion Matrix on Test Data
     from sklearn.metrics import confusion_matrix
@@ -297,8 +315,8 @@ def plotting(n_train, n_neighbors):
 
     print(title)
     print(disp.confusion_matrix)
-    plt.savefig('confusion_spanen_absolute.png')
-    plt.show()
+    plt.savefig('lackieren_confusion_absolute_'+str(n_train)+'.png')
+    # plt.show()
 
     title = 'Konfusionsmatrix (normalisiert)'
     normalize = 'true'
@@ -312,13 +330,8 @@ def plotting(n_train, n_neighbors):
 
     print(title)
     print(disp.confusion_matrix)
-    plt.savefig('confusion_spanen_normalised.png')
-    plt.show()
-
-    # plot a classification report
-    from sklearn.metrics import classification_report
-    report = classification_report(y_test, y_pred)
-    print(report)
+    plt.savefig('lackieren_confusion_normalised_'+str(n_train)+'.png')
+    # plt.show()
 
 # call plotting function
 plotting(n_train, n_neighbors)

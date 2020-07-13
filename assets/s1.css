@@ -573,17 +573,22 @@ there.
     display: flex;
   }
   #category,
-  #category_lackieren,
   #accuracy,
   #f1score,
   #precision {
     margin-right: 10px;
   }
 
-  #category {
-    margin-left: 0px;
+  #category_lackieren,
+  #accuracy_lackieren,
+  #f1score_lackieren,
+  #precision_lackieren {
+    margin-right: 10px;
   }
 
+  #category_ {
+    margin-left: 0px;
+  }
   #category_lackieren {
     margin-left: 0px;
   }
@@ -591,6 +596,10 @@ there.
   #sensitivity {
     margin-right: 0px;
   }
+  #sensitivity_lackieren {
+    margin-right: 0px;
+  }
+
   .mini_container {
     margin-bottom: 25px !important;
     border-radius: 5px;
