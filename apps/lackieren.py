@@ -320,6 +320,7 @@ def update_inputs(pathname, value):
     # load model from pickle
     clf = pickle.load(open("assets/lackieren/lackieren_knn_model_" + str(n_train) + ".sav", 'rb'))
 
+    print()
     if pathname == '/lackieren':
 
         #   append global url list
@@ -327,8 +328,8 @@ def update_inputs(pathname, value):
         global_slider_lackieren.append(str(value))
         new_slider_status = global_slider_lackieren[-1]
         reload_datapoint = False
-        if new_slider_status == old_slider_status:
-            reload_datapoint = True
+        # if new_slider_status == old_slider_status:
+        #     reload_datapoint = True
 
         if reload_datapoint == True:
             # append global index list
