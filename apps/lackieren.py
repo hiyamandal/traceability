@@ -156,7 +156,7 @@ layout = html.Div([
                                 html.A("Montage", href="/montage", className="alert-link"),
                             ],
                             color="success",
-                            style={'font-size': '150%'},
+                            style={'font-size': '130%'},
                         ),
                         dbc.Alert(
                             [
@@ -164,7 +164,7 @@ layout = html.Div([
                                 html.A("Lackieren", href="/lackieren", className="alert-link"),
                             ],
                             color="warning",
-                            style={'font-size': '150%'},
+                            style={'font-size': '130%'},
                         ),
                         dbc.Alert(
                             [
@@ -172,7 +172,7 @@ layout = html.Div([
                                 html.A("Ausschuss", href="/", className="alert-link"),
                             ],
                             color="danger",
-                            style={'font-size': '150%'},
+                            style={'font-size': '130%'},
                         ),
                     ]
                 ),
@@ -532,7 +532,7 @@ def update_inputs(pathname):
                                 html.A("Montage", href="/montage", className="alert-link"),
                             ],
                             color="success",
-                            style={'font-size': '150%'},
+                            style={'font-size': '130%'},
                             ),
         # elif z[0] == 1:
         #     cat_string = "Nachbearbeiten"

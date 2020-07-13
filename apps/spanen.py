@@ -51,7 +51,7 @@ layout = html.Div([
     html.Br(),
     html.H4('Station Spanen', style={'font-weight': 'bold', 'text-decoration': 'underline'}),
     html.Hr(),
-    html.H3('Klassifizierungsergebnisse', style={'font-weight': 'bold'}),
+    html.H4('Klassifizierungsergebnisse', style={'font-weight': 'bold'}),
     html.Br(),
     html.Div([
         dbc.Row([
@@ -158,7 +158,7 @@ layout = html.Div([
                                 html.A("Lackieren", href="/lackieren", className="alert-link"),
                             ],
                             color="success",
-                            style={'font-size': '150%'},
+                            style={'font-size': '130%'},
                         ),
                         dbc.Alert(
                             [
@@ -166,7 +166,7 @@ layout = html.Div([
                                 html.A("Spanen", href="/spanen", className="alert-link"),
                             ],
                             color="warning",
-                            style={'font-size': '150%'},
+                            style={'font-size': '130%'},
                         ),
                         dbc.Alert(
                             [
@@ -174,7 +174,7 @@ layout = html.Div([
                                 html.A("Ausschuss", href="/", className="alert-link"),
                             ],
                             color="danger",
-                            style={'font-size': '150%'},
+                            style={'font-size': '130%'},
                         ),
                     ]
                 ),
@@ -464,37 +464,37 @@ def update_inputs(pathname, value):
         # update info boxes
         accuracy_callback = html.Div(
             [
-                html.H5("Genauigkeit", style={"text-align": "center", 'font-weight': 'bold'}),
+                html.H6("Genauigkeit", style={"text-align": "center", 'font-weight': 'bold'}),
                 html.Br(),
-                html.H3(str(accuracy), style={"text-align": "center", 'font-weight': 'bold'}, ),
+                html.H4(str(accuracy), style={"text-align": "center", 'font-weight': 'bold'}, ),
                 html.Br(),
             ],
         ),
         f1_score_callback = html.Div(
             [
-                html.H5("F1-Score",
+                html.H6("F1-Score",
                         style={"text-align": "center", 'font-weight': 'bold'}),
                 html.Br(),
-                html.H3(str(f1_score), style={"text-align": "center", 'font-weight': 'bold'}, ),
+                html.H4(str(f1_score), style={"text-align": "center", 'font-weight': 'bold'}, ),
                 html.Br(),
             ],
         ),
         precision_callback = html.Div(
             [
-                html.H5("Präzision", style={"text-align": "center", 'font-weight': 'bold'}),
+                html.H6("Präzision", style={"text-align": "center", 'font-weight': 'bold'}),
                 html.Br(),
-                html.H6("Gutteil: " + str(precision_gutteil), style={"text-align": "center"}, ),
-                html.H6("Nachbearbeiten: " + str(precision_nachbearbeiten), style={"text-align": "center"}, ),
-                html.H6("Ausschuss: " + str(precision_ausschuss), style={"text-align": "center"}, ),
+                html.H7("Gutteil: " + str(precision_gutteil), style={"text-align": "center"}, ),
+                html.H7("Nachbearbeiten: " + str(precision_nachbearbeiten), style={"text-align": "center"}, ),
+                html.H7("Ausschuss: " + str(precision_ausschuss), style={"text-align": "center"}, ),
             ],
         ),
         sensitivity_callback = html.Div(
             [
-                html.H5("Sensitivität", style={"text-align": "center", 'font-weight': 'bold'}),
+                html.H6("Sensitivität", style={"text-align": "center", 'font-weight': 'bold'}),
                 html.Br(),
-                html.H6("Gutteil: " + str(sensitivity_gutteil), style={"text-align": "center"}, ),
-                html.H6("Nachbearbeiten: " + str(sensitivity_nachbearbeiten), style={"text-align": "center"}, ),
-                html.H6("Ausschuss: " + str(sensitivity_ausschuss), style={"text-align": "center"}, ),
+                html.H7("Gutteil: " + str(sensitivity_gutteil), style={"text-align": "center"}, ),
+                html.H7("Nachbearbeiten: " + str(sensitivity_nachbearbeiten), style={"text-align": "center"}, ),
+                html.H7("Ausschuss: " + str(sensitivity_ausschuss), style={"text-align": "center"}, ),
             ],
         ),
 
@@ -608,7 +608,7 @@ def update_inputs(pathname, value):
                                     html.A("Lackieren", href="/lackieren", className="alert-link"),
                                 ],
                                 color="success",
-                                style={'font-size': '150%'},
+                                style={'font-size': '130%'},
                                 ),
         elif z[0] == 1:
             cat_string = "Nachbearbeiten"
@@ -619,7 +619,7 @@ def update_inputs(pathname, value):
                                     html.A("Spanen", href="spanen", className="alert-link"),
                                 ],
                                 color="warning",
-                                style={'font-size': '150%'},
+                                style={'font-size': '130%'},
                                 ),
 
         elif z[0] == 2:
@@ -631,7 +631,7 @@ def update_inputs(pathname, value):
                                     html.A("Ausschuss", href="/", className="alert-link"),
                                 ],
                                 color="danger",
-                                style={'font-size': '150%'},
+                                style={'font-size': '130%'},
                                 ),
 
         category = html.Div(
