@@ -3,7 +3,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 
-from app import app
+from app import app, server
 from apps import anmeldung, spanen, lackieren, montage, commonmodules
 
 # the styles for the main content position it to the right of the sidebar and
