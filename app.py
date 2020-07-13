@@ -2,6 +2,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
+import os
 
 app = dash.Dash(
     __name__,
@@ -16,6 +17,7 @@ app = dash.Dash(
 app.config.suppress_callback_exceptions = True
 server = app.server
 
+server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
 
 if __name__ == '__main__':
     app.run_server(debug=True)

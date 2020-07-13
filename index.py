@@ -2,9 +2,12 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
+import os
 
 from app import app, server
 from apps import anmeldung, spanen, lackieren, montage, commonmodules
+
+server.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
 
 # the styles for the main content position it to the right of the sidebar and
 # add some padding.
