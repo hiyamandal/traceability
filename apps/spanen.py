@@ -483,18 +483,18 @@ def update_inputs(pathname, value):
             [
                 html.H6("Präzision", style={"text-align": "center", 'font-weight': 'bold'}),
                 html.Br(),
-                html.H7("Gutteil: " + str(precision_gutteil), style={"text-align": "center"}, ),
-                html.H7("Nachbearbeiten: " + str(precision_nachbearbeiten), style={"text-align": "center"}, ),
-                html.H7("Ausschuss: " + str(precision_ausschuss), style={"text-align": "center"}, ),
+                html.P("Gutteil: " + str(precision_gutteil), style={"text-align": "center"}, ),
+                html.P("Nachbearb.: " + str(precision_nachbearbeiten), style={"text-align": "center"}, ),
+                html.P("Ausschuss: " + str(precision_ausschuss), style={"text-align": "center"}, ),
             ],
         ),
         sensitivity_callback = html.Div(
             [
                 html.H6("Sensitivität", style={"text-align": "center", 'font-weight': 'bold'}),
                 html.Br(),
-                html.H7("Gutteil: " + str(sensitivity_gutteil), style={"text-align": "center"}, ),
-                html.H7("Nachbearbeiten: " + str(sensitivity_nachbearbeiten), style={"text-align": "center"}, ),
-                html.H7("Ausschuss: " + str(sensitivity_ausschuss), style={"text-align": "center"}, ),
+                html.P("Gutteil: " + str(sensitivity_gutteil), style={"text-align": "center"}, ),
+                html.P("Nachbearb.: " + str(sensitivity_nachbearbeiten), style={"text-align": "center"}, ),
+                html.P("Ausschuss: " + str(sensitivity_ausschuss), style={"text-align": "center"}, ),
             ],
         ),
 
