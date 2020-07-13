@@ -277,11 +277,11 @@ def update_inputs(pathname, value):
         old_slider_status = global_slider_spanen[-1]
         global_slider_spanen.append(str(value))
         new_slider_status = global_slider_spanen[-1]
-        reload_datapoint = True
-        if new_slider_status != old_slider_status:
+        reload_datapoint = False
+        if new_slider_status == old_slider_status:
             print(new_slider_status, old_slider_status)
             print("IN FOR LOOP")
-            reload_datapoint = False
+            reload_datapoint = True
 
         if reload_datapoint == True:
             # append global index list
