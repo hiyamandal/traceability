@@ -646,24 +646,41 @@ def update_inputs(pathname, value):
         ))
 
         fig4_callback.update_layout(
-            margin = {'l': 15, 'r': 15, 't': 15, 'b': 15},
-            xaxis_title='Kraft in kN',
-            yaxis_title='Leistung in kW',
-            font=dict(
-                size=18,
-            ),
-            xaxis=dict(
-                range=[0,8]
-            ),
-            yaxis = dict(
-            range=[0, 6],),
-            legend=dict(
-                yanchor="top",
-                y=0.99,
-                xanchor="left",
-                x=0.70
-            )
+            margin = {'l': 0, 'r': 0, 't': 0, 'b': 0},
+            scene=dict(
+                xaxis=dict(
+                    title='Leistung in kW'),
+                yaxis=dict(
+                    title='Druck in bar'),
+                zaxis=dict(
+                    title='Temperatur in °C'), ),
+                legend=dict(
+                    yanchor="top",
+                    y=0.95,
+                    xanchor="left",
+                    x=0.70
+                )
         )
+
+        # fig4_callback.update_layout(
+        #     margin = {'l': 15, 'r': 15, 't': 15, 'b': 15},
+        #     xaxis_title='Kraft in kN',
+        #     yaxis_title='Leistung in kW',
+        #     font=dict(
+        #         size=18,
+        #     ),
+        #     xaxis=dict(
+        #         range=[0,8]
+        #     ),
+        #     yaxis = dict(
+        #     range=[0, 6],),
+        #     legend=dict(
+        #         yanchor="top",
+        #         y=0.99,
+        #         xanchor="left",
+        #         x=0.70
+        #     )
+        # )
 
         # load model from pickle
         import pickle
