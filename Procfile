@@ -1,3 +1,3 @@
 web: gunicorn index:server
-web: gunicorn hello:app --preload
+web: gunicorn ptw-traceability:app --preload
 gunicorn ptw-traceability:app --timeout 10
