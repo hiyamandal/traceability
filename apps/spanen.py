@@ -15,6 +15,12 @@ from app import app
 from scipy.stats import multinomial, uniform, expon
 import numpy as np
 
+# suppress sklearn warnings
+def warn(*args, **kwargs):
+    pass
+import warnings
+warnings.warn = warn
+
 global_index_spanen = [0]
 global_slider_spanen = ['1000']
 global_P_list_spanen = []
@@ -274,9 +280,9 @@ def update_inputs(pathname, value):
 
     n_train = value
     ctx = dash.callback_context
-    print(ctx.triggered)
-    print(ctx.inputs)
-    print(ctx.states)
+    # print(ctx.triggered)
+    # print(ctx.inputs)
+    # print(ctx.states)
     if pathname == '/spanen':
 
         # with open("assets/spanen/spanen_knn_data_" + str(n_train) + ".csv") as mycsv:
@@ -291,6 +297,9 @@ def update_inputs(pathname, value):
         # file.write(str(value) + "\n")
         # file.close()
 
+        print(str(value))
+        print(global_P_list_spanen)
+        print(global_F_list_spanen)
         old_slider_status = global_slider_spanen[-1]
         global_slider_spanen.append(str(value))
         new_slider_status = global_slider_spanen[-1]
