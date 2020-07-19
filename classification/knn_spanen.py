@@ -192,7 +192,6 @@ def plotting(n_train, n_neighbors):
     print(title)
     print(disp.confusion_matrix)
     plt.savefig('spanen_confusion_normalised_'+str(n_train)+'.png')
-    # plt.show()
 
 # call plotting function
 plotting(n_train, n_neighbors)

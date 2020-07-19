@@ -186,23 +186,8 @@ def plotting(n_train, n_neighbors):
     file.write(str(y_train.tolist()) + "\n")
     file.write(str(X_train.tolist()) + "\n")
     file.write(str(report) + "\n")
-    # file.write(str(cat.tolist()) + "\n")
-    # file.write(str(L.tolist()) + "\n")
-    # file.write(str(D.tolist()) + "\n")
-    # file.write(str(T.tolist()) + "\n")
 
     file.close()
-
-    # file = open("spanen_knn_data_"+str(n_train)+".csv", "w+")
-    # file.write(str(y_test.tolist()) + "\n")
-    # file.write(str(X_test.tolist()) + "\n")  # +","+str(xx_list)+","+str(yy_list)+","+str(Z_list))
-    # file.write(str(xx_list) + "\n")
-    # file.write(str(yy_list) + "\n")
-    # file.write(str(Z_list) + "\n")
-    # file.write(str(y_train.tolist()) + "\n")
-    # file.write(str(X_train.tolist()) + "\n")
-    # file.write(str(report) + "\n")
-    # file.close()
 
     h = .04  # step size in the mesh
     h2 = .2

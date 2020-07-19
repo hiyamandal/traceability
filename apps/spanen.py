@@ -302,9 +302,11 @@ def update_inputs(pathname, value):
             # append global index list
             index = global_index_spanen[-1]
             while global_index_spanen[-1] == index:
+
                 # erzeuge randomisierte prozessgrößen
                 draw = multinomial.rvs(1, [0.4, 0.3, 0.3])  # 0.5, 0.3, 0.2
                 index = int(np.where(draw == 1)[0])
+
             global_index_spanen.append(index)
 
             # gutteil, leisung P und kraft F sind OK

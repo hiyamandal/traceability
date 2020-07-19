@@ -10,7 +10,6 @@ import plotly.graph_objects as go
 from apps import commonmodules
 from app import app
 
-from scipy.stats import multinomial, uniform, expon
 import numpy as np
 import pickle
 
@@ -549,27 +548,6 @@ def update_inputs(pathname, value):
             0.0: 'lightgreen'
         }
 
-        # marker_colors = [marker_color[k] for k in df_train['z_train_scatter'].values]
-        #
-        # # scatter plot of training data
-        # fig3_callback.add_trace(go.Scatter(
-        #     x=df_train['x_train_scatter'],
-        #     y=df_train['y_train_scatter'],
-        #     mode='markers',
-        #     name='Trainingsdaten',
-        #     marker_color=marker_colors,
-        #     marker=dict(
-        #         opacity = 0.4,
-        #         symbol = 'x',
-        #         # color='rgb(255, 178, 102)',
-        #         size=10,
-        #         line=dict(
-        #             color='DarkSlateGrey',
-        #             width=1
-        #         )
-        #     )
-        # ))
-
         marker_colors = [marker_color[k] for k in df_test['z_test_scatter'].values]
 
         fig4_callback = go.Figure()
@@ -630,26 +608,6 @@ def update_inputs(pathname, value):
                     x=0.70
                 )
         )
-
-        # fig4_callback.update_layout(
-        #     margin = {'l': 15, 'r': 15, 't': 15, 'b': 15},
-        #     xaxis_title='Kraft in kN',
-        #     yaxis_title='Leistung in kW',
-        #     font=dict(
-        #         size=18,
-        #     ),
-        #     xaxis=dict(
-        #         range=[0,8]
-        #     ),
-        #     yaxis = dict(
-        #     range=[0, 6],),
-        #     legend=dict(
-        #         yanchor="top",
-        #         y=0.99,
-        #         xanchor="left",
-        #         x=0.70
-        #     )
-        # )
 
         if z[0] == 0:
             cat_string = "Gutteil"

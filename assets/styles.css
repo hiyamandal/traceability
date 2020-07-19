@@ -119,7 +119,15 @@ body {
   flex: 1;
 }
 
+#accuracy_lackieren {
+  flex: 1;
+}
+
 #f1score {
+  flex: 1;
+}
+
+#f1score_lackieren {
   flex: 1;
 }
 
@@ -131,7 +139,15 @@ body {
   flex: 1;
 }
 
+#precision_lackieren {
+  flex: 1;
+}
+
 #sensitivity {
+  flex: 1;
+}
+
+#sensitivity_lackieren {
   flex: 1;
 }
 
