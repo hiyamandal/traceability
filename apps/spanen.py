@@ -236,6 +236,8 @@ layout = html.Div([
         ],
     ),
     html.Hr(),
+    # Hidden divs to store values to share between callbacks
+    html.Div(id='slider_status', style={'display': 'none'})
 ])
 
 # callbacks
@@ -259,6 +261,20 @@ def toggle_collapse_options(n, is_open):
         return not is_open
     return is_open
 
+
+
+@app.callback([
+    Output('slider_status', 'value'),
+], [
+    Input('url', 'pathname'),
+    Input('dataset-slider_spanen','value'),
+])
+def save_slider_status(pathname, value):
+    slider_status = value
+    import json
+    #json.dumps(slider_status)
+    return [json.dumps(slider_status)]
+
 @app.callback([
           Output('fig1_callback_spanen', 'figure'),
           Output('fig2_callback_spanen', 'figure'),
@@ -274,40 +290,142 @@ def toggle_collapse_options(n, is_open):
           Output('spanen_confusion_normalised', 'children'),
       ],[
           Input('url','pathname'),
-          Input('dataset-slider_spanen','value')
+          Input('dataset-slider_spanen','value'),
+          Input('slider_status', 'value'),
        ])
-def update_inputs(pathname, value):
-
+def update_inputs(pathname, value, value2):
+    import json
     n_train = value
-    ctx = dash.callback_context
-    # print(ctx.triggered)
-    # print(ctx.inputs)
-    # print(ctx.states)
+    slider_status = value
+    slider_status_saved = json.loads(value2)
+
+    from os import path
+
+    # load old slider status from file
+    if path.exists("temp_spanen_slider.csv"):
+        f = open("temp_spanen_slider.csv", "r")
+        old_value = int(f.read())
+        f.close()
+    else:
+        old_value = None
+
+    # write new slider status to file
+    file = open("temp_spanen_slider.csv", "w")
+    file.write(str(value) + "\n")
+    file.close()
+
     if pathname == '/spanen':
 
-        # with open("assets/spanen/spanen_knn_data_" + str(n_train) + ".csv") as mycsv:
-        #     for line in mycsv:
-        #         old_slider_status = line
-        # new_slider_status = value
+        # load test and training data of knn model
+        with open("assets/spanen/spanen_knn_data_" + str(n_train) + ".csv") as mycsv:
+            count = 0
+            for line in mycsv:
+                if count == 0:
+                    z_test_load = line
+                if count == 1:
+                    data_test_load = line
+                if count == 2:
+                    xx_load = line
+                if count == 3:
+                    yy_load = line
+                if count == 4:
+                    Z_load = line
+                if count == 5:
+                    z_train_load = line
+                if count == 6:
+                    data_train_load = line
+                if count == 7:
+                    report = line
+                if count == 8:
+                    break
+                count += 1
+
+        import re, ast # transform strings to numpy lists, while conserving np.array dimensions
+
+        z_test_load = re.sub('\s+', '', z_test_load)
+        z_test_scatter = ast.literal_eval(z_test_load)
+
+        z_train_load = re.sub('\s+', '', z_train_load)
+        z_train_scatter = ast.literal_eval(z_train_load)
+
+        data_test_load = re.sub('\s+', '', data_test_load)
+        data_test_load = np.asarray(ast.literal_eval(data_test_load))
+        x_test_scatter = np.round(data_test_load[:, 0], 2).tolist()
+        y_test_scatter = np.round(data_test_load[:, 1], 2).tolist()
+
+        data_train_load = re.sub('\s+', '', data_train_load)
+        data_train_load = np.asarray(ast.literal_eval(data_train_load))
+        x_train_scatter = np.round(data_train_load[:, 0], 2).tolist()
+        y_train_scatter = np.round(data_train_load[:, 1], 2).tolist()
+
+        xx_load = re.sub('\s+', '', xx_load)
+        x_cont = ast.literal_eval(xx_load)
+
+        yy_load = re.sub('\s+', '', yy_load)
+        y_cont = ast.literal_eval(yy_load)
+
+        Z_load = re.sub('\s+', '', Z_load)
+        z_cont = np.asarray(ast.literal_eval(Z_load))
+
+        report = re.sub('\s+', '', report)
+        report = ast.literal_eval(report)
+
+        # get accuracy metrics from report
+        accuracy = np.round(report['accuracy'], 2)
+        f1_score = np.round(report['macroavg']['f1-score'], 2)
+
+        precision_gutteil = np.round(report['0.0']['precision'], 2)
+        sensitivity_gutteil = np.round(report['0.0']['recall'], 2)
+        precision_nachbearbeiten = np.round(report['1.0']['precision'], 2)
+        sensitivity_nachbearbeiten = np.round(report['1.0']['recall'], 2)
+        precision_ausschuss = np.round(report['2.0']['precision'], 2)
+        sensitivity_ausschuss = np.round(report['2.0']['recall'], 2)
+
+        colorscale = [[0, 'green'], [0.5, 'darkorange'], [1, 'darkred']]
+        fig3_callback = go.Figure(data=
+        go.Contour(
+            name='Klassifizierung',
+            z=z_cont,
+            x=x_cont,
+            y=y_cont,
+            colorscale=colorscale,
+            showscale=False,
+        ))
+
+        fig3_callback.update_layout(
+            margin={'l': 15, 'r': 15, 't': 15, 'b': 15},
+            xaxis_title='Kraft in kN',
+            yaxis_title='Leistung in kW',
+            font=dict(
+                size=18,
+            ),
+            xaxis=dict(
+                range=[0, 8]
+            ),
+            yaxis=dict(
+                range=[0, 6]
+            )
+        )
+
+        # old_slider_status = global_slider_spanen[-1]
+        # global_slider_spanen.append(str(value))
+        # new_slider_status = global_slider_spanen[-1]
+        # reload_datapoint = True
         # if new_slider_status != old_slider_status:
         #     reload_datapoint = False
-        #
-        # #   append global url list
-        # file = open("temp_spanen_slider.csv", "w+")
-        # file.write(str(value) + "\n")
-        # file.close()
 
-        print(str(value))
-        print(global_P_list_spanen)
-        print(global_F_list_spanen)
-        old_slider_status = global_slider_spanen[-1]
-        global_slider_spanen.append(str(value))
-        new_slider_status = global_slider_spanen[-1]
-        reload_datapoint = True
-        if new_slider_status != old_slider_status:
-            reload_datapoint = False
+        # load old process parameters from file
+        if path.exists("temp_process_params.csv"):
 
-        if reload_datapoint == True:
+            f = open("temp_process_params.csv", "r")
+            process_params_load1 = f.read()
+            f.close()
+
+            process_params_load2 = re.sub('\s+', '', process_params_load1)
+            process_params = ast.literal_eval(process_params_load2)
+
+        if value == old_value or path.exists("temp_process_params.csv") == False:
+        # if reload_datapoint == True:
             # append global index list
             index = global_index_spanen[-1]
             while global_index_spanen[-1] == index:
@@ -364,6 +482,16 @@ def update_inputs(pathname, value):
             global_P_list_spanen.append(P)
             global_F_list_spanen.append(F)
 
+            process_params = [P.tolist(), F.tolist()]
+
+            file = open("temp_process_params.csv", "w")
+            file.write(str(process_params) + "\n")
+            file.close()
+
+            # if slider_status == slider_status_saved:
+        # contour plot
+
+
         # load confusion matrix
         spanen_confusion_absolute_callback = html.Div([
             html.Img(src=app.get_asset_url('spanen/spanen_confusion_absolute_' + str(n_train) + '.png'))
@@ -376,7 +504,8 @@ def update_inputs(pathname, value):
         fig1_callback = go.Figure()
 
         fig1_callback.add_trace(go.Indicator(
-            mode="number+gauge", value=global_F_list_spanen[-1][0], number={'font': {'size': 30}},
+            # mode="number+gauge", value=global_F_list_spanen[-1][0], number={'font': {'size': 30}},
+            mode="number+gauge", value=process_params[1][0], number={'font': {'size': 30}},
             # delta = {'reference': 200},
             domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
             title={'text': "Kraft in kN", 'font': {'size': 20}},
@@ -402,7 +531,8 @@ def update_inputs(pathname, value):
 
         fig2_callback = go.Figure()
         fig2_callback.add_trace(go.Indicator(
-            mode="number+gauge", value=global_P_list_spanen[-1][0], number={'font': {'size': 30}},
+            # mode="number+gauge", value=global_P_list_spanen[-1][0], number={'font': {'size': 30}},
+            mode="number+gauge", value=process_params[0][0], number={'font': {'size': 30}},
             # delta = {'reference': 200},
             domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
             title={'text': "Leistung in kW", 'font': {'size': 20}},
@@ -422,71 +552,6 @@ def update_inputs(pathname, value):
         )
         fig2_callback.update_layout(autosize=True, height=150, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
                                     paper_bgcolor="#f9f9f9", )
-
-        with open("assets/spanen/spanen_knn_data_"+str(n_train)+".csv") as mycsv:
-            count = 0
-            for line in mycsv:
-                if count == 0:
-                    z_test_load = line
-                if count == 1:
-                    data_test_load = line
-                if count == 2:
-                    xx_load = line
-                if count == 3:
-                    yy_load = line
-                if count == 4:
-                    Z_load = line
-                if count == 5:
-                    z_train_load = line
-                if count == 6:
-                    data_train_load = line
-                if count == 7:
-                    report = line
-                if count == 8:
-                    break
-                count += 1
-
-        # transform strings to numpy lists, while conserving np.array dimensions
-        import re, ast
-
-        z_test_load = re.sub('\s+', '', z_test_load)
-        z_test_scatter = ast.literal_eval(z_test_load)
-
-        z_train_load = re.sub('\s+', '', z_train_load)
-        z_train_scatter = ast.literal_eval(z_train_load)
-
-        data_test_load = re.sub('\s+', '', data_test_load)
-        data_test_load = np.asarray(ast.literal_eval(data_test_load))
-        x_test_scatter = np.round(data_test_load[:, 0],2).tolist()
-        y_test_scatter = np.round(data_test_load[:, 1],2).tolist()
-
-        data_train_load = re.sub('\s+', '', data_train_load)
-        data_train_load = np.asarray(ast.literal_eval(data_train_load))
-        x_train_scatter = np.round(data_train_load[:, 0],2).tolist()
-        y_train_scatter = np.round(data_train_load[:, 1],2).tolist()
-
-        xx_load = re.sub('\s+', '', xx_load)
-        x_cont = ast.literal_eval(xx_load)
-
-        yy_load = re.sub('\s+', '', yy_load)
-        y_cont = ast.literal_eval(yy_load)
-
-        Z_load = re.sub('\s+', '', Z_load)
-        z_cont = np.asarray(ast.literal_eval(Z_load))
-
-        report = re.sub('\s+', '', report)
-        report = ast.literal_eval(report)
-
-        # get accuracy metrics from report
-        accuracy = np.round(report['accuracy'], 2)
-        f1_score = np.round(report['macroavg']['f1-score'], 2)
-
-        precision_gutteil = np.round(report['0.0']['precision'], 2)
-        sensitivity_gutteil = np.round(report['0.0']['recall'], 2)
-        precision_nachbearbeiten = np.round(report['1.0']['precision'], 2)
-        sensitivity_nachbearbeiten = np.round(report['1.0']['recall'], 2)
-        precision_ausschuss = np.round(report['2.0']['precision'], 2)
-        sensitivity_ausschuss = np.round(report['2.0']['recall'], 2)
 
         # update info boxes
         accuracy_callback = html.Div(
@@ -528,18 +593,6 @@ def update_inputs(pathname, value):
         # dataframe for scatter data
         df_test = pandas.DataFrame({'x_test_scatter': x_test_scatter, 'y_test_scatter': y_test_scatter, 'z_test_scatter': z_test_scatter})
         df_train = pandas.DataFrame({'x_train_scatter': x_train_scatter, 'y_train_scatter': y_train_scatter, 'z_train_scatter': z_train_scatter})
-
-        # contour plot
-        colorscale = [[0, 'green'], [0.5, 'darkorange'], [1, 'darkred']]
-        fig3_callback = go.Figure(data=
-        go.Contour(
-            name='Klassifizierung',
-            z=z_cont,
-            x=x_cont,
-            y=y_cont,
-            colorscale=colorscale,
-            showscale=False,
-        ))
 
         # define marker colors
         marker_color = {
@@ -589,8 +642,10 @@ def update_inputs(pathname, value):
 
         # scatter plot of single new test point
         fig3_callback.add_trace(go.Scatter(
-            x=np.asarray(global_F_list_spanen[-1][0]),
-            y=np.asarray(global_P_list_spanen[-1][0]),
+            x=process_params[1],
+            y=process_params[0],
+            # x=np.asarray(global_F_list_spanen[-1][0]),
+            # y=np.asarray(global_P_list_spanen[-1][0]),
             mode='markers',
             name='Prozessparameter',
             marker_color='magenta',
@@ -605,26 +660,12 @@ def update_inputs(pathname, value):
             )
         ))
 
-        fig3_callback.update_layout(
-            margin = {'l': 15, 'r': 15, 't': 15, 'b': 15},
-            xaxis_title='Kraft in kN',
-            yaxis_title='Leistung in kW',
-            font=dict(
-                size=18,
-            ),
-            xaxis=dict(
-                range=[0,8]
-            ),
-            yaxis = dict(
-            range=[0, 6]
-        )
-        )
-
         # load model from pickle
         import pickle
 
         clf = pickle.load(open("assets/spanen/spanen_knn_model_"+str(n_train)+".sav", 'rb'))
-        z = clf.predict(np.c_[global_F_list_spanen[-1][0], global_P_list_spanen[-1][0]])
+        z = clf.predict(np.c_[process_params[1][0], process_params[0][0]])
+        # z = clf.predict(np.c_[global_F_list_spanen[-1][0], global_P_list_spanen[-1][0]])
 
         if z[0] == 0:
             cat_string = "Gutteil"
