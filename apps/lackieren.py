@@ -14,10 +14,6 @@ import numpy as np
 import pickle
 
 global_index_lackieren = [0]
-global_slider_lackieren = ['2000']
-global_L_list_lackieren = []
-global_D_list_lackieren = []
-global_T_list_lackieren = []
 
 # tab styles
 tabs_styles = {
@@ -135,14 +131,14 @@ layout = html.Div([
             width=6),
         ],
         align="center",
-        ),#flex-hd-row, flex-column
-    ], className="flex-hd-row, flex-column align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"), # d-flex
+        ),
+    ], className="flex-hd-row, flex-column align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),
     html.Hr(style={'height': '30px', 'font-weight': 'bold'}),
     html.H5('Handlungsempfehlung', style={'font-weight': 'bold'}),
     html.Br(),
     html.Div(
-        className="flex-hd-row, flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm", # d-flex
-        id="handlungsempfehlung_lackieren"),
+        className="flex-hd-row, flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm",
+        id="recommendation_lackieren"),
     html.Br(),
     html.Div(
     [
@@ -231,7 +227,6 @@ layout = html.Div([
                                     ], align="center", )
                                 ],
                                     className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),
-                                # d-flex
                             ]),
                         dcc.Tab(label='Konfusionsmatrix', style=tab_style, selected_style=tab_selected_style, children=[
                             html.Div([
@@ -252,7 +247,6 @@ layout = html.Div([
                                     ),
                                 ], align="center", )
                             ], className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),
-                            # d-flex
                         ]),
                         dcc.Tab(label='Wirtschaftliche Bewertung', style=tab_style, selected_style=tab_selected_style,
                                 children=[
@@ -265,6 +259,7 @@ layout = html.Div([
                     ], style=tabs_styles),
                 ], className="flex-column, flex-hd-row p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
                 id="collapse-details_lackieren",
+
             ),
         ],
     ),
@@ -299,7 +294,7 @@ def toggle_collapse_options(n, is_open):
           Output('fig4_callback_lackieren', 'figure'),
           Output('category_lackieren', 'children'),
           Output('category_lackieren', 'style'),
-          Output('handlungsempfehlung_lackieren', 'children'),
+          Output('recommendation_lackieren', 'children'),
           Output('accuracy_lackieren', 'children'),
           Output('f1score_lackieren', 'children'),
           Output('precision_lackieren', 'children'),
@@ -311,144 +306,32 @@ def toggle_collapse_options(n, is_open):
           Output('lackieren_train_temp', 'children'),
       ],[
           Input('url','pathname'),
-          Input('dataset-slider_lackieren','value')
+          Input('dataset-slider_lackieren','value'),
        ])
-def update_inputs(pathname, value):
+def update_inputs(pathname, slider_status):
 
-    n_train = value
+    n_train = slider_status
+
     # load model from pickle
     clf = pickle.load(open("assets/lackieren/lackieren_knn_model_" + str(n_train) + ".sav", 'rb'))
 
-    print()
+    from os import path
+    # load old slider status from file
+    if path.exists("temp/temp_lackieren_slider.csv"):
+        f = open("temp/temp_lackieren_slider.csv", "r")
+        old_slider_status = int(f.read())
+        f.close()
+    else:
+        old_slider_status= None
+
+    # write new slider status to file
+    file = open("temp/temp_lackieren_slider.csv", "w")
+    file.write(str(slider_status) + "\n")
+    file.close()
+
     if pathname == '/lackieren':
 
-        #   append global url list
-        old_slider_status = global_slider_lackieren[-1]
-        global_slider_lackieren.append(str(value))
-        new_slider_status = global_slider_lackieren[-1]
-        reload_datapoint = True
-        if new_slider_status != old_slider_status:
-            reload_datapoint = False
-
-        if reload_datapoint == True:
-            # append global index list
-            index = global_index_lackieren[-1]
-            while global_index_lackieren[-1] == index:
-
-                mean = [1.5, 6, 32]
-                cov = [[1.5, 0, 0], [0, 5, 0], [0, 0, 120]] # 1,3,100
-
-                L, D, T = np.random.multivariate_normal(mean, cov, 1).T
-                L = np.abs(L)
-                D = np.abs(D)
-                T = np.abs(T)
-
-                z = clf.predict(np.c_[L, D, T])
-                index = int(z)
-
-            global_index_lackieren.append(index)
-
-            global_L_list_lackieren.append(L)
-            global_D_list_lackieren.append(D)
-            global_T_list_lackieren.append(T)
-
-        # do prediction
-        z = clf.predict(
-            np.c_[global_L_list_lackieren[-1][0], global_D_list_lackieren[-1][0], global_T_list_lackieren[-1][0]])
-
-        # load confusion matrix
-        lackieren_confusion_absolute_callback = html.Div([
-            html.Img(src=app.get_asset_url('lackieren/lackieren_confusion_absolute_' + str(n_train) + '.png'))
-        ],)
-        lackieren_confusion_normalised_callback = html.Div([
-            html.Img(src=app.get_asset_url('lackieren/lackieren_confusion_normalised_' + str(n_train) + '.png'))
-        ],)
-
-        # load predictions along planes
-        lackieren_train_power= html.Div([
-            html.Img(src=app.get_asset_url('lackieren/lackieren_train_power_' + str(n_train) + '.png'))
-        ],)
-        lackieren_train_pressure = html.Div([
-            html.Img(src=app.get_asset_url('lackieren/lackieren_train_pressure_' + str(n_train) + '.png'))
-        ],)
-        lackieren_train_temp= html.Div([
-            html.Img(src=app.get_asset_url('lackieren/lackieren_train_temp_' + str(n_train) + '.png'))
-        ],)
-
-        # plot für prozessgrößen
-        fig1_callback = go.Figure()
-
-        fig1_callback.add_trace(go.Indicator(
-            mode="number+gauge", value=global_D_list_lackieren[-1][0], number={'font': {'size': 30}},
-            domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
-            title={'text': "Druck in bar", 'font': {'size': 20}},
-            gauge={
-                'shape': "bullet",
-                'axis': {'range': [0, 12]},
-                'threshold': {
-                    'line': {'color': 'black', 'width': 5},
-                    'thickness': 0.75,
-                    'value': 8},
-                'steps': [
-                    {'range': [0, 4], 'color': "lightgray"},
-                    {'range': [4, 8], 'color': "green"},
-                    {'range': [8, 12], 'color': "lightgray"}],
-                'bar': {
-                    'color': 'black'}
-                        },
-        ),
-        )
-
-        fig1_callback.update_layout(autosize=True, height=100, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
-                           paper_bgcolor="#f9f9f9", )
-
-        fig2_callback = go.Figure()
-        fig2_callback.add_trace(go.Indicator(
-            mode="number+gauge", value=global_T_list_lackieren[-1][0], number={'font': {'size': 30}},
-            domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
-            title={'text': "Temperatur in °C", 'font': {'size': 20}},
-            gauge={
-                'shape': "bullet",
-                'axis': {'range': [0, 60]},
-                'threshold': {
-                    'line': {'color': 'black', 'width': 5},
-                    'thickness': 0.75,
-                    'value': 45},
-                'steps': [
-                    {'range': [0, 18], 'color': "lightgray"},
-                    {'range': [18, 45], 'color': "green"},
-                    {'range': [45, 60], 'color': "lightgray"}],
-                'bar': {
-                    'color': 'black'}
-
-            },
-        )
-        )
-        fig2_callback.update_layout(autosize=True, height=100, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
-                                    paper_bgcolor="#f9f9f9", )
-
-        fig3_callback = go.Figure()
-        fig3_callback.add_trace(go.Indicator(
-            mode="number+gauge", value=global_L_list_lackieren[-1][0], number={'font': {'size': 30}},
-            domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
-            title={'text': "Leistung in kW", 'font': {'size': 20}},
-            gauge={
-                'shape': "bullet",
-                'axis': {'range': [0, 6]},
-                'threshold': {
-                    'line': {'color': 'black', 'width': 5},
-                    'thickness': 0.75,
-                    'value': 3},
-                'steps': [
-                    {'range': [0, 3], 'color': "green"},
-                    {'range': [3, 6], 'color': "lightgray"}],
-                'bar': {'color': 'black'},
-            },
-        )
-        )
-        fig3_callback.update_layout(autosize=True, height=100, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
-                                    paper_bgcolor="#f9f9f9", )
-
+        # load training and test data for scatter plot
         with open("assets/lackieren/lackieren_knn_data_"+str(n_train)+".csv") as mycsv:
             count = 0
             for line in mycsv:
@@ -472,19 +355,11 @@ def update_inputs(pathname, value):
         z_test_load = re.sub('\s+', '', z_test_load)
         z_test_scatter = ast.literal_eval(z_test_load)
 
-        # z_train_load = re.sub('\s+', '', z_train_load)
-        # z_train_scatter = ast.literal_eval(z_train_load)
-
         data_test_load = re.sub('\s+', '', data_test_load)
         data_test_load = np.asarray(ast.literal_eval(data_test_load))
         L_test_scatter = np.round(data_test_load[:, 0],2).tolist()
         D_test_scatter = np.round(data_test_load[:, 1],2).tolist()
         T_test_scatter = np.round(data_test_load[:, 2],2).tolist()
-
-        # data_train_load = re.sub('\s+', '', data_train_load)
-        # data_train_load = np.asarray(ast.literal_eval(data_train_load))
-        # x_train_scatter = np.round(data_train_load[:, 0],2).tolist()
-        # y_train_scatter = np.round(data_train_load[:, 1],2).tolist()
 
         report = re.sub('\s+', '', report)
         report = ast.literal_eval(report)
@@ -499,8 +374,144 @@ def update_inputs(pathname, value):
         sensitivity_nachbearbeiten = np.round(report['1.0']['recall'], 2)
         precision_ausschuss = np.round(report['2.0']['precision'], 2)
         sensitivity_ausschuss = np.round(report['2.0']['recall'], 2)
+        
+        # load old process parameters from file
+        if path.exists("temp/temp_process_params_lackieren.csv"):
 
-        # update info boxes
+            f = open("temp/temp_process_params_lackieren.csv", "r")
+            process_params_load1 = f.read()
+            f.close()
+
+            process_params_load2 = re.sub('\s+', '', process_params_load1)
+            process_params = ast.literal_eval(process_params_load2)
+            
+        # if new slider status equals old slider status, dont create a new pair of process parameters
+        if slider_status == old_slider_status or path.exists("temp/temp_process_params_lackieren.csv") == False:
+
+            index = global_index_lackieren[-1]
+            while global_index_lackieren[-1] == index:
+                
+                # create randomized process parameters
+                mean = [1.5, 6, 32]
+                cov = [[1.5, 0, 0], [0, 5, 0], [0, 0, 120]] # 1,3,100
+
+                L, D, T = np.random.multivariate_normal(mean, cov, 1).T
+                L = np.abs(L)
+                D = np.abs(D)
+                T = np.abs(T)
+
+                z = clf.predict(np.c_[L, D, T])
+                index = int(z)
+
+                process_params = [L.tolist(), D.tolist(), T.tolist()]
+
+                # save process_params to temp file
+                file = open("temp/temp_process_params_lackieren.csv", "w")
+                file.write(str(process_params) + "\n")
+                file.close()
+                
+            global_index_lackieren.append(index)
+
+        # do prediction
+        z = clf.predict(
+            np.c_[process_params[0][0], process_params[1][0], process_params[2][0]])
+
+        # load confusion matrix
+        lackieren_confusion_absolute_callback = html.Div([
+            html.Img(src=app.get_asset_url('lackieren/lackieren_confusion_absolute_' + str(n_train) + '.png'))
+        ],)
+        lackieren_confusion_normalised_callback = html.Div([
+            html.Img(src=app.get_asset_url('lackieren/lackieren_confusion_normalised_' + str(n_train) + '.png'))
+        ],)
+
+        # load predictions along planes
+        lackieren_train_power= html.Div([
+            html.Img(src=app.get_asset_url('lackieren/lackieren_train_power_' + str(n_train) + '.png'))
+        ],)
+        lackieren_train_pressure = html.Div([
+            html.Img(src=app.get_asset_url('lackieren/lackieren_train_pressure_' + str(n_train) + '.png'))
+        ],)
+        lackieren_train_temp= html.Div([
+            html.Img(src=app.get_asset_url('lackieren/lackieren_train_temp_' + str(n_train) + '.png'))
+        ],)
+
+        # plot bar graph of pressure
+        fig1_callback = go.Figure()
+
+        fig1_callback.add_trace(go.Indicator(
+            mode="number+gauge", value=process_params[1][0], number={'font': {'size': 30}},
+            domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
+            title={'text': "Druck in bar", 'font': {'size': 20}},
+            gauge={
+                'shape': "bullet",
+                'axis': {'range': [0, 12]},
+                'threshold': {
+                    'line': {'color': 'black', 'width': 5},
+                    'thickness': 0.75,
+                    'value': 8},
+                'steps': [
+                    {'range': [0, 4], 'color': "lightgray"},
+                    {'range': [4, 8], 'color': "green"},
+                    {'range': [8, 12], 'color': "lightgray"}],
+                'bar': {
+                    'color': 'black'}
+                        },
+        ),
+        )
+
+        fig1_callback.update_layout(autosize=True, height=100, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
+                           paper_bgcolor="#f9f9f9", )
+        
+        # plot bar graph of temperature
+        fig2_callback = go.Figure()
+        fig2_callback.add_trace(go.Indicator(
+            mode="number+gauge", value=process_params[2][0], number={'font': {'size': 30}},
+            domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
+            title={'text': "Temperatur in °C", 'font': {'size': 20}},
+            gauge={
+                'shape': "bullet",
+                'axis': {'range': [0, 60]},
+                'threshold': {
+                    'line': {'color': 'black', 'width': 5},
+                    'thickness': 0.75,
+                    'value': 45},
+                'steps': [
+                    {'range': [0, 18], 'color': "lightgray"},
+                    {'range': [18, 45], 'color': "green"},
+                    {'range': [45, 60], 'color': "lightgray"}],
+                'bar': {
+                    'color': 'black'}
+
+            },
+        )
+        )
+        fig2_callback.update_layout(autosize=True, height=100, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
+                                    paper_bgcolor="#f9f9f9", )
+        
+        # plot bar graph of power
+        fig3_callback = go.Figure()
+        fig3_callback.add_trace(go.Indicator(
+            mode="number+gauge", value=process_params[0][0], number={'font': {'size': 30}},
+            domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
+            title={'text': "Leistung in kW", 'font': {'size': 20}},
+            gauge={
+                'shape': "bullet",
+                'axis': {'range': [0, 6]},
+                'threshold': {
+                    'line': {'color': 'black', 'width': 5},
+                    'thickness': 0.75,
+                    'value': 3},
+                'steps': [
+                    {'range': [0, 3], 'color': "green"},
+                    {'range': [3, 6], 'color': "lightgray"}],
+                'bar': {'color': 'black'},
+            },
+        )
+        )
+        fig3_callback.update_layout(autosize=True, height=100, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
+                                    paper_bgcolor="#f9f9f9", )
+
+        # update info boxes with accuracy metrics
         accuracy_callback = html.Div(
             [
                 html.H6("Genauigkeit", style={"text-align": "center", 'font-weight': 'bold'}),
@@ -537,9 +548,8 @@ def update_inputs(pathname, value):
             ],
         ),
 
-        # dataframe for scatter data
+        # dataframe for scatter of test data
         df_test = pandas.DataFrame({'L_test_scatter': L_test_scatter, 'D_test_scatter': D_test_scatter, 'T_test_scatter': T_test_scatter,'z_test_scatter': z_test_scatter})
-        # df_train = pandas.DataFrame({'x_train_scatter': x_train_scatter, 'y_train_scatter': y_train_scatter, 'z_train_scatter': z_train_scatter})
 
         # define marker colors
         marker_color = {
@@ -575,9 +585,9 @@ def update_inputs(pathname, value):
 
         # scatter plot of single new test point
         fig4_callback.add_trace(go.Scatter3d(
-            x=np.asarray(global_L_list_lackieren[-1][0]),
-            y=np.asarray(global_D_list_lackieren[-1][0]),
-            z=np.asarray(global_T_list_lackieren[-1][0]),
+            x=np.asarray(process_params[0][0]),
+            y=np.asarray(process_params[1][0]),
+            z=np.asarray(process_params[2][0]),
             mode='markers',
             name='Prozessparameter',
             marker_color='magenta',
@@ -612,7 +622,7 @@ def update_inputs(pathname, value):
         if z[0] == 0:
             cat_string = "Gutteil"
             cat_color = "green"
-            empfehlung_alert = dbc.Alert(
+            recommendation_alert = dbc.Alert(
                                 [
                                     "Handlungsempfehlung: Weiter zur Station ",
                                     html.A("Montage", href="/montage", className="alert-link"),
@@ -623,7 +633,7 @@ def update_inputs(pathname, value):
         elif z[0] == 1:
             cat_string = "Nachbearbeiten"
             cat_color = "orange"
-            empfehlung_alert = dbc.Alert(
+            recommendation_alert = dbc.Alert(
                                 [
                                     "Handlungsempfehlung: Nachbearbeitung an Station ",
                                     html.A("Lackieren", href="lackieren", className="alert-link"),
@@ -635,7 +645,7 @@ def update_inputs(pathname, value):
         elif z[0] == 2:
             cat_string = "Ausschuss"
             cat_color = "darkred"
-            empfehlung_alert = dbc.Alert(
+            recommendation_alert = dbc.Alert(
                                 [
                                     "Handlungsempfehlung: Klassifiziere Bauteil als ",
                                     html.A("Ausschuss", href="/", className="alert-link"),
@@ -656,7 +666,7 @@ def update_inputs(pathname, value):
 
         style = {"background-color": cat_color, 'display': 'inline-block', "text-align": "center", 'vertical-align': 'middle'}
 
-        return [fig1_callback, fig2_callback, fig3_callback, fig4_callback, category, style, empfehlung_alert, accuracy_callback,
+        return [fig1_callback, fig2_callback, fig3_callback, fig4_callback, category, style, recommendation_alert, accuracy_callback,
                 f1_score_callback, precision_callback, sensitivity_callback,
                 lackieren_confusion_absolute_callback, lackieren_confusion_normalised_callback,
                 lackieren_train_power, lackieren_train_pressure, lackieren_train_temp]

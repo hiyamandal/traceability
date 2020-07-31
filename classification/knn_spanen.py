@@ -12,6 +12,8 @@ n_neighbors = 5
 
 # script for generating data
 def gen_data(n_train):
+
+    # create data as multivariate normal distribution
     mean = [2.5, 1.5]
     cov = [[2.5, 1.5], [1.5, 1.5]]
 
@@ -34,25 +36,31 @@ def gen_data(n_train):
 
 # assigning labels to the data (0=Gutteil,1=Nachbearbeiten,2=Ausschuss)
 def labels(F, P):
+
+    # initialize all labels with OK
     cat = np.zeros(len(F))
     for i in range(len(P)):
         alpha_0 = 1000
 
+        # more likely to be rework if power bigger 3
         if P[i] > 3:
             alpha = (P[i] - 3) * 0.3
             prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
             cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
 
+        # more likely to be rework if force bigger 5
         if F[i] > 5:
             alpha = (F[i] - 5) * 0.3
             prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
             cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
 
+        # more likey to be scrap if power > and force > 5
         if P[i] > 3 and F[i] > 5:
             alpha = ((F[i] - 5) * 0.1 + (P[i] - 3) * 0.1) / 2
             prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
             cat[i] = np.random.multinomial(1, prior, size=1)[0][0] + 1
 
+        # more likely to be rework if force < 0.5
         if F[i] < 0.5:
             alpha = np.abs(F[i] - 0.5) * 0.3
             prior = np.random.dirichlet((alpha_0, alpha), 1)[0]

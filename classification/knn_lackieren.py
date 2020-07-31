@@ -14,21 +14,22 @@ n_neighbors = 5
 # script for generating data
 def gen_data(n_train):
 
+    # create data as multivariate normal distribution
     mean = [1.5, 6, 32]
-    # cov = [[1, 1, 1   0], [1, 2, 10], [1, 1, 45]] # 1, 2, 45
     cov = [[1, 0, 0], [0, 3, 0], [0, 0, 100]] #75
 
     L, D, T = np.random.multivariate_normal(mean, cov, n_train).T
 
+    # delete datapoints where power (L), pressure (D) or temperature (T) are below zero
     idx = []
     for i in range(len(L)):
         if L[i] < 0 or D[i] < 0 or T[i] < 0:
             idx.append(i)
-
     L = np.delete(L, idx, 0)
     D = np.delete(D, idx, 0)
     T = np.delete(T, idx, 0)
 
+    # create data array
     X = np.zeros((len(L), 3))
     for i in range(len(L)):
         X[i, 0] = L[i]
@@ -38,14 +39,14 @@ def gen_data(n_train):
     return L, D, T, X
 
 
-# assigning labels to the data (0=Gutteil,1=Nachbearbeiten,2=Ausschuss)
+# assigning labels to the data (0= rework / Gutteil, 1= rework / Nachbearbeiten,2= scrap / Ausschuss)
 def labels(L, D, T):
     p_blurring = [0.90, 0.10]
     cat = np.zeros(len(L))
     for i in range(len(L)):
         alpha_0 = 1
-        factor = 0.1
         factor = 0.00001
+
         if L[i] > 3:
             if L[i] < 3.5:
                 prior = np.asarray(np.array(p_blurring))
@@ -56,7 +57,6 @@ def labels(L, D, T):
                 cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
                 if L[i] > 5:
                     cat[i] += 1
-                #cat[i] = 1
 
         if D[i] > 8:
             if D[i] < 8.5:
@@ -68,7 +68,6 @@ def labels(L, D, T):
                 cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
                 if D[i] > 9 or T[i] > 50 or T[i] < 13:
                     cat[i] += 1
-                #cat[i] = 1
 
         if D[i] < 4:
             if D[i] > 3.5:
@@ -78,7 +77,6 @@ def labels(L, D, T):
                 alpha = np.abs((D[i] - 4)) * factor
                 prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
                 cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
-                # cat[i] = 1
                 if D[i] < 3 or T[i] < 13 or T[i] > 50:
                     cat[i] += 1
 
@@ -90,7 +88,6 @@ def labels(L, D, T):
                 alpha = np.abs((T[i] - 45)) * factor
                 prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
                 cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
-                # cat[i] = 1
                 if T[i] > 50 or D[i] > 9:
                     cat[i] += 1
 
@@ -104,27 +101,16 @@ def labels(L, D, T):
                 cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
                 if T[i] < 13 or D[i] < 3:
                     cat[i] += 1
-                #cat[i] = 1
 
-        # if P[i] > 3 and F[i] > 5:
-        #     alpha = ((F[i] - 5) * 0.1 + (P[i] - 3) * 0.1) / 2
-        #     prior = np.DArandom.dirichlet((alpha_0, alpha), 1)[0]
-        #     cat[i] = np.random.multinomial(1, prior, size=1)[0][0] + 1
-        #     #cat[i] = 1
-        #
-        # if F[i] < 0.5:
-        #     alpha = np.abs(F[i] - 0.5) * 0.3
-        #     prior = np.random.dirichlet((alpha_0, alpha), 1)[0]
-        #     cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
-
-            #cat[i] = 0
+        # classify as rework
         if L[i] > 3 and L[i] < 3.5:
             cat[i] = 1
+
+        # classify as scrap
         if D[i] > 9 or D[i] < 2 or L[i] > 3.5 :
             cat[i] = 2
-            #cat[i] = 2
 
-        # Gutteil
+        #  part OK
         if D[i] > 5 and D[i] < 7 and T[i]>18 and T[i]<45 and L[i]>2.5 and L[i]<6:
             if T[i] > (7.71 * L[i] - 1.28 ):
                 cat[i] = 0
@@ -316,7 +302,6 @@ def plotting(n_train, n_neighbors):
     print(title)
     print(disp.confusion_matrix)
     plt.savefig('lackieren_confusion_normalised_'+str(n_train)+'.png')
-    # plt.show()
 
 # call plotting function
 plotting(n_train, n_neighbors)

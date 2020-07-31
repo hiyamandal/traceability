@@ -1,5 +1,3 @@
-import dash as dash
-
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
@@ -22,9 +20,6 @@ import warnings
 warnings.warn = warn
 
 global_index_spanen = [0]
-global_slider_spanen = ['1000']
-global_P_list_spanen = []
-global_F_list_spanen = []
 
 # tab styles
 tabs_styles = {
@@ -138,14 +133,14 @@ layout = html.Div([
             width=6),
         ],
         align="center",
-        ),#flex-hd-row, flex-column
-    ], className="flex-hd-row, flex-column align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"), # d-flex
+        ),
+    ], className="flex-hd-row, flex-column align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),
     html.Hr(style={'height': '30px', 'font-weight': 'bold'}),
     html.H5('Handlungsempfehlung', style={'font-weight': 'bold'}),
     html.Br(),
     html.Div(
-        className="flex-hd-row, flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm", # d-flex
-        id="handlungsempfehlung_spanen"),
+        className="flex-hd-row, flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm",
+        id="recommendation_spanen"),
     html.Br(),
     html.Div(
     [
@@ -236,8 +231,6 @@ layout = html.Div([
         ],
     ),
     html.Hr(),
-    # Hidden divs to store values to share between callbacks
-    html.Div(id='slider_status', style={'display': 'none'})
 ])
 
 # callbacks
@@ -261,27 +254,13 @@ def toggle_collapse_options(n, is_open):
         return not is_open
     return is_open
 
-
-
-@app.callback([
-    Output('slider_status', 'value'),
-], [
-    Input('url', 'pathname'),
-    Input('dataset-slider_spanen','value'),
-])
-def save_slider_status(pathname, value):
-    slider_status = value
-    import json
-    #json.dumps(slider_status)
-    return [json.dumps(slider_status)]
-
 @app.callback([
           Output('fig1_callback_spanen', 'figure'),
           Output('fig2_callback_spanen', 'figure'),
           Output('fig3_callback_spanen', 'figure'),
           Output('category', 'children'),
           Output('category', 'style'),
-          Output('handlungsempfehlung_spanen', 'children'),
+          Output('recommendation_spanen', 'children'),
           Output('accuracy', 'children'),
           Output('f1score', 'children'),
           Output('precision', 'children'),
@@ -291,27 +270,23 @@ def save_slider_status(pathname, value):
       ],[
           Input('url','pathname'),
           Input('dataset-slider_spanen','value'),
-          Input('slider_status', 'value'),
        ])
-def update_inputs(pathname, value, value2):
-    import json
-    n_train = value
-    slider_status = value
-    slider_status_saved = json.loads(value2)
+def update_inputs(pathname, slider_status):
+
+    n_train = slider_status
 
     from os import path
-
     # load old slider status from file
-    if path.exists("temp_spanen_slider.csv"):
-        f = open("temp_spanen_slider.csv", "r")
-        old_value = int(f.read())
+    if path.exists("temp/temp_spanen_slider.csv"):
+        f = open("temp/temp_spanen_slider.csv", "r")
+        old_slider_status = int(f.read())
         f.close()
     else:
-        old_value = None
+        old_slider_status= None
 
     # write new slider status to file
-    file = open("temp_spanen_slider.csv", "w")
-    file.write(str(value) + "\n")
+    file = open("temp/temp_spanen_slider.csv", "w")
+    file.write(str(slider_status) + "\n")
     file.close()
 
     if pathname == '/spanen':
@@ -373,7 +348,6 @@ def update_inputs(pathname, value, value2):
         # get accuracy metrics from report
         accuracy = np.round(report['accuracy'], 2)
         f1_score = np.round(report['macroavg']['f1-score'], 2)
-
         precision_gutteil = np.round(report['0.0']['precision'], 2)
         sensitivity_gutteil = np.round(report['0.0']['recall'], 2)
         precision_nachbearbeiten = np.round(report['1.0']['precision'], 2)
@@ -381,62 +355,32 @@ def update_inputs(pathname, value, value2):
         precision_ausschuss = np.round(report['2.0']['precision'], 2)
         sensitivity_ausschuss = np.round(report['2.0']['recall'], 2)
 
-        colorscale = [[0, 'green'], [0.5, 'darkorange'], [1, 'darkred']]
-        fig3_callback = go.Figure(data=
-        go.Contour(
-            name='Klassifizierung',
-            z=z_cont,
-            x=x_cont,
-            y=y_cont,
-            colorscale=colorscale,
-            showscale=False,
-        ))
-
-        fig3_callback.update_layout(
-            margin={'l': 15, 'r': 15, 't': 15, 'b': 15},
-            xaxis_title='Kraft in kN',
-            yaxis_title='Leistung in kW',
-            font=dict(
-                size=18,
-            ),
-            xaxis=dict(
-                range=[0, 8]
-            ),
-            yaxis=dict(
-                range=[0, 6]
-            )
-        )
-
-        # old_slider_status = global_slider_spanen[-1]
-        # global_slider_spanen.append(str(value))
-        # new_slider_status = global_slider_spanen[-1]
-        # reload_datapoint = True
-        # if new_slider_status != old_slider_status:
-        #     reload_datapoint = False
-
         # load old process parameters from file
-        if path.exists("temp_process_params.csv"):
+        if path.exists("temp/temp_process_params_spanen.csv"):
 
-            f = open("temp_process_params.csv", "r")
+            f = open("temp/temp_process_params_spanen.csv", "r")
             process_params_load1 = f.read()
             f.close()
 
             process_params_load2 = re.sub('\s+', '', process_params_load1)
             process_params = ast.literal_eval(process_params_load2)
 
-        if value == old_value or path.exists("temp_process_params.csv") == False:
-        # if reload_datapoint == True:
-            # append global index list
+        # if new slider status equals old slider status, dont create a new pair of process parameters
+        if slider_status == old_slider_status or path.exists("temp/temp_process_params_spanen.csv") == False:
+            
             index = global_index_spanen[-1]
             while global_index_spanen[-1] == index:
 
-                # erzeuge randomisierte prozessgrößen
-                draw = multinomial.rvs(1, [0.4, 0.3, 0.3])  # 0.5, 0.3, 0.2
+                # create randomized process parameters
+                p1 = 0.4    # probability for component OK
+                p2 = 0.3    # probability for component needs rework
+                p3 = 0.3    # probability for component is scrap part
+                draw = multinomial.rvs(1, [p1, p2, p3])
                 index = int(np.where(draw == 1)[0])
 
             global_index_spanen.append(index)
 
-            # gutteil, leisung P und kraft F sind OK
+            # if process parameters are okay
             if index == 0:
 
                 mean = [2.5, 1.5]
@@ -448,49 +392,43 @@ def update_inputs(pathname, value, value2):
                     if F > 0.5 and F < 5 and P > 0 and P < 3:
                         bool = False
 
-            # nacharbeit
+            # if rework
             elif index == 1:
                 draw2 = multinomial.rvs(1, [0.5, 0.5])
                 index2 = np.where(draw2 == 1)
 
-                # Leistung zu hoch
+                # power too high
                 if index2[0] == 0:
                     P = expon.rvs(3.5, 0.3, size=1)
                     F = uniform.rvs(3.5, 1.5, size=1)
 
-                # Kraft zu niedrig oder zu hoch
+                # force too low or too high
                 elif index2[0] == 1:
 
                     draw3 = multinomial.rvs(1, [0.5, 0.5])
                     index3 = np.where(draw3 == 1)
 
-                    # Kraft zu niedrig
+                    # force too low
                     if index3[0] == 0:
                         P = uniform.rvs(0.5, 1, size=1)
                         F = uniform.rvs(0, 0.25, size=1)
 
-                    # Kraft zu hoch
+                    # force too high
                     elif index3[0] == 1:
                         P = uniform.rvs(2, 0.5, size=1)
                         F = expon.rvs(5.5, 0.2, size=1)
 
-            # ausschuss: leistung und kraft zu hoch
+            # scrap: power and force too high
             elif index == 2:
                 P = expon.rvs(3.5, 0.3, size=1)  # loc, scale, size
                 F = expon.rvs(5.5, 0.2, size=1)
 
-            global_P_list_spanen.append(P)
-            global_F_list_spanen.append(F)
-
             process_params = [P.tolist(), F.tolist()]
 
-            file = open("temp_process_params.csv", "w")
+            # save process_params to temp file
+            file = open("temp/temp_process_params_spanen.csv", "w")
             file.write(str(process_params) + "\n")
             file.close()
-
-            # if slider_status == slider_status_saved:
-        # contour plot
-
 
         # load confusion matrix
         spanen_confusion_absolute_callback = html.Div([
@@ -500,13 +438,11 @@ def update_inputs(pathname, value, value2):
             html.Img(src=app.get_asset_url('spanen/spanen_confusion_normalised_' + str(n_train) + '.png'))
         ],)
 
-        # plot für prozessgrößen
+        # plot bar graph of force
         fig1_callback = go.Figure()
 
         fig1_callback.add_trace(go.Indicator(
-            # mode="number+gauge", value=global_F_list_spanen[-1][0], number={'font': {'size': 30}},
             mode="number+gauge", value=process_params[1][0], number={'font': {'size': 30}},
-            # delta = {'reference': 200},
             domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
             title={'text': "Kraft in kN", 'font': {'size': 20}},
             gauge={
@@ -529,9 +465,9 @@ def update_inputs(pathname, value, value2):
         fig1_callback.update_layout(autosize=True, height=150, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
                            paper_bgcolor="#f9f9f9", )
 
+        # plot bar graph of power
         fig2_callback = go.Figure()
         fig2_callback.add_trace(go.Indicator(
-            # mode="number+gauge", value=global_P_list_spanen[-1][0], number={'font': {'size': 30}},
             mode="number+gauge", value=process_params[0][0], number={'font': {'size': 30}},
             # delta = {'reference': 200},
             domain={'x': [0.25, 1], 'y': [0.3, 0.7]},
@@ -553,7 +489,7 @@ def update_inputs(pathname, value, value2):
         fig2_callback.update_layout(autosize=True, height=150, margin={'t': 0, 'b': 0, 'l': 0, 'r': 0},
                                     paper_bgcolor="#f9f9f9", )
 
-        # update info boxes
+        # update info boxes with accuracy metrics
         accuracy_callback = html.Div(
             [
                 html.H6("Genauigkeit", style={"text-align": "center", 'font-weight': 'bold'}),
@@ -590,19 +526,45 @@ def update_inputs(pathname, value, value2):
             ],
         ),
 
-        # dataframe for scatter data
+        # create dataframe for scattered training and test data
         df_test = pandas.DataFrame({'x_test_scatter': x_test_scatter, 'y_test_scatter': y_test_scatter, 'z_test_scatter': z_test_scatter})
         df_train = pandas.DataFrame({'x_train_scatter': x_train_scatter, 'y_train_scatter': y_train_scatter, 'z_train_scatter': z_train_scatter})
 
-        # define marker colors
         marker_color = {
             2.0: 'lightcoral',
             1.0: 'orange',
             0.0: 'lightgreen'
         }
-
         marker_colors = [marker_color[k] for k in df_train['z_train_scatter'].values]
+        
+        colorscale = [[0, 'green'], [0.5, 'darkorange'], [1, 'darkred']]
 
+        # plot contour plot of classification results
+        fig3_callback = go.Figure(data=
+        go.Contour(
+            name='Klassifizierung',
+            z=z_cont,
+            x=x_cont,
+            y=y_cont,
+            colorscale=colorscale,
+            showscale=False,
+        ))
+
+        fig3_callback.update_layout(
+            margin={'l': 15, 'r': 15, 't': 15, 'b': 15},
+            xaxis_title='Kraft in kN',
+            yaxis_title='Leistung in kW',
+            font=dict(
+                size=18,
+            ),
+            xaxis=dict(
+                range=[0, 8]
+            ),
+            yaxis=dict(
+                range=[0, 6]
+            )
+        )
+        
         # scatter plot of training data
         fig3_callback.add_trace(go.Scatter(
             x=df_train['x_train_scatter'],
@@ -624,7 +586,7 @@ def update_inputs(pathname, value, value2):
 
         marker_colors = [marker_color[k] for k in df_test['z_test_scatter'].values]
 
-        # scatter plot of training data
+        # scatter plot of test data
         fig3_callback.add_trace(go.Scatter(
             x=df_test['x_test_scatter'],
             y=df_test['y_test_scatter'],
@@ -644,8 +606,6 @@ def update_inputs(pathname, value, value2):
         fig3_callback.add_trace(go.Scatter(
             x=process_params[1],
             y=process_params[0],
-            # x=np.asarray(global_F_list_spanen[-1][0]),
-            # y=np.asarray(global_P_list_spanen[-1][0]),
             mode='markers',
             name='Prozessparameter',
             marker_color='magenta',
@@ -660,17 +620,17 @@ def update_inputs(pathname, value, value2):
             )
         ))
 
-        # load model from pickle
+        # load learn k-nearest-neighbor model from pickle and make prediction on single new test point
         import pickle
 
         clf = pickle.load(open("assets/spanen/spanen_knn_model_"+str(n_train)+".sav", 'rb'))
         z = clf.predict(np.c_[process_params[1][0], process_params[0][0]])
-        # z = clf.predict(np.c_[global_F_list_spanen[-1][0], global_P_list_spanen[-1][0]])
 
+        # update recommendation: component OK
         if z[0] == 0:
             cat_string = "Gutteil"
             cat_color = "green"
-            empfehlung_alert = dbc.Alert(
+            recommendation_alert = dbc.Alert(
                                 [
                                     "Handlungsempfehlung: Weiter zur Station ",
                                     html.A("Lackieren", href="/lackieren", className="alert-link"),
@@ -678,10 +638,11 @@ def update_inputs(pathname, value, value2):
                                 color="success",
                                 style={'font-size': '130%'},
                                 ),
+        # update recommendation: rework
         elif z[0] == 1:
             cat_string = "Nachbearbeiten"
             cat_color = "orange"
-            empfehlung_alert = dbc.Alert(
+            recommendation_alert = dbc.Alert(
                                 [
                                     "Handlungsempfehlung: Nachbearbeitung an Station ",
                                     html.A("Spanen", href="spanen", className="alert-link"),
@@ -689,11 +650,11 @@ def update_inputs(pathname, value, value2):
                                 color="warning",
                                 style={'font-size': '130%'},
                                 ),
-
+        # update recommendation: scrap part
         elif z[0] == 2:
             cat_string = "Ausschuss"
             cat_color = "darkred"
-            empfehlung_alert = dbc.Alert(
+            recommendation_alert = dbc.Alert(
                                 [
                                     "Handlungsempfehlung: Klassifiziere Bauteil als ",
                                     html.A("Ausschuss", href="/", className="alert-link"),
@@ -701,7 +662,7 @@ def update_inputs(pathname, value, value2):
                                 color="danger",
                                 style={'font-size': '130%'},
                                 ),
-
+        # update box which says OK / rework / scrap
         category = html.Div(
                         [
                             html.Br(),
@@ -714,7 +675,7 @@ def update_inputs(pathname, value, value2):
 
         style = {"background-color": cat_color, 'display': 'inline-block', "text-align": "center", 'vertical-align': 'middle'}
 
-        return [fig1_callback, fig2_callback, fig3_callback, category, style, empfehlung_alert, accuracy_callback,
+        return [fig1_callback, fig2_callback, fig3_callback, category, style, recommendation_alert, accuracy_callback,
                 f1_score_callback, precision_callback, sensitivity_callback,
                 spanen_confusion_absolute_callback, spanen_confusion_normalised_callback]
 
