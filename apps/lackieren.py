@@ -234,14 +234,14 @@ layout = html.Div([
                                     dbc.Col(
                                         html.Div([
                                         ],
-                                            style={'width': '100 %', "text-align": "center", 'diplay': "flex"},
+                                            style={'width': '100 %', "text-align": "center", 'display': "flex"},
                                             id='lackieren_confusion_absolute',
                                         ),
                                     ),
                                     dbc.Col(
                                         html.Div([
                                         ],
-                                            style={'width': '100 %', "text-align": "center", 'diplay': "flex"},
+                                            style={'width': '100 %', "text-align": "center", 'display': "flex"},
                                             id='lackieren_confusion_normalised',
                                         ),
                                     ),
