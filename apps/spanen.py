@@ -13,6 +13,7 @@ from app import app
 from scipy.stats import multinomial, uniform, expon
 import numpy as np
 
+import os
 from os import path
 import re, ast
 
@@ -235,13 +236,13 @@ layout = html.Div([
                         ]),
                         dcc.Tab(label='Wirtschaftliche Bewertung', style=tab_style, selected_style=tab_selected_style, children=[
                             html.Div([
-                                html.H6("Kosteneinsparpotential durch Eliminierung der Qualitätskonstrolle: "),
+                                html.H6("Kostensenkung durch Eliminierung der Qualitätskontrolle: "),
                                 html.Ul(
-                                    html.Li("Ø 10 Arbeitsstunden mit Personalkostensatz von 50 €/h = 500€"),
+                                    html.Li("Ø 5 Arbeitsstunden mit Personalkostensatz von 50 €/h = 250€"),
                                 ),
-                                html.H6('Kosten durch Fehlklassifizierung: '),
+                                html.H6(id='increase_in_costs_spanen'),
                                 html.Ul(
-                                    [html.Li("Ø 10 Arbeitsstunden mit Personalkostensatz von 50 €/h = 500€"),
+                                    [
                                     ],
                                     id='cost_misclassification_spanen',
                                 ),
@@ -258,21 +259,6 @@ layout = html.Div([
     html.Div(id='hidden-div-spanen', style={'display':'none'})
 ])
 
-
-# callback for updating econmic evaluation
-@app.callback([
-          Output('cost_misclassification_spanen', 'children'),
-          Output('savings_spanen', 'children')
-      ],[
-          Input('url','pathname'),
-          Input('dataset-slider_spanen','value'),
-       ])
-def update_economic_evaluation(pathname, slider_status):
-    if pathname == '/spanen':
-        n_train = int(slider_status)
-        cost_misclassification = None
-        savings_spanen = '1'
-    return [cost_misclassification, savings_spanen]
 
 # reset slider status in temp .csv file on page reload
 @app.callback([
@@ -760,3 +746,89 @@ def update_inputs(pathname, slider_status):
                 f1_score_callback, precision_callback, sensitivity_callback,
                 spanen_confusion_absolute_callback, spanen_confusion_normalised_callback]
 
+
+# callback for updating economic evaluation
+@app.callback([
+    Output('cost_misclassification_spanen', 'children'),
+    Output('savings_spanen', 'children'),
+    Output('savings_spanen', 'style'),
+    Output('increase_in_costs_spanen', 'children'),
+], [
+    Input('url', 'pathname'),
+    Input('dataset-slider_spanen', 'value'),
+    Input('category', 'children')
+])
+def update_economic_evaluation(pathname, slider_status, category):
+    if pathname == '/spanen':
+
+        n_train = int(slider_status)
+
+        # load accuracy metrics
+        with open("assets/spanen/spanen_knn_data_" + str(n_train) + ".csv") as mycsv:
+            count = 0
+            for line in mycsv:
+                if count == 7:
+                    classification_report = line
+                if count == 8:
+                    break
+                count += 1
+
+        # transform strings to numpy lists, while conserving np.array dimensions
+        classification_report = re.sub('\s+', '', classification_report)
+        classification_report = ast.literal_eval(classification_report)
+
+        # get accuracy metrics from classification_report
+        precision_gutteil = np.round(classification_report['0.0']['precision'], 2)
+        precision_nachbearbeiten = np.round(classification_report['1.0']['precision'], 2)
+        precision_ausschuss = np.round(classification_report['2.0']['precision'], 2)
+
+        # this gives prediction for newly simulated data point: gutteil, nachbearbeiten, aussschuss
+        cat = category['props']['children'][3]['props']['children']
+
+        # select correct precision and cost for misclassification depending on class
+        if cat == 'Gutteil':
+            precision = precision_gutteil
+            # reasoning: if a part is wrongly classified as OK, there will be unnecessary cost of  processing the part
+            # at stations lackieren (500) and assembly (500). we assume additional cost due to customer complaint that
+            # part is not OK (3000)
+            cost = 4000
+            list_cost_misclass = [
+                html.Li(
+                    'Kosten für weitere Bearbeitung an Stationen Lackieren und Montage: 1000€ * (1 - ' + 'Präzision der Klasse (' + str(
+                        precision) + '))'),
+                html.Li('Kosten durch Kundenreklamation: 3000 € * (1 - ' + 'Präzision der Klasse (' + str(precision) + '))')
+            ]
+            increase_in_costs_spanen = 'Kostenerhöhung durch Fehlklassifizierung als Klasse Gutteil:'
+
+        elif cat == 'Nachbearbeiten':
+            precision = precision_nachbearbeiten
+            # reasoning: if a part is wrongly classified as rework, there will be unnecessary cost of  processing the part
+            # at station spanen again (500)
+            cost = 500
+            list_cost_misclass = html.Li(
+                'Kosten für Nachbearbeitung an Station Spanen: 500 € * ( 1 - ' + 'Präzision der Klasse (' + str(
+                    precision) + '))')
+            increase_in_costs_spanen = 'Kostenerhöhung durch Fehlklassifizierung als Klasse Nachbearbeiten:'
+
+        elif cat == 'Ausschuss':
+            precision = precision_ausschuss
+            # reasoning: if a part is wrongly classified as scrap, we have unnecessary cost of wasting raw material (2000)
+            cost = 2000
+            list_cost_misclass = html.Li(
+                'Kosten für Verlust an Rohmaterial: 2000 € * (1 - ' + 'Präzision der Klasse (' + str(
+                    precision) + '))')
+            increase_in_costs_spanen = 'Kostenerhöhung durch Fehlklassifizierung als Klasse Ausschuss:'
+
+        cost_per_part = (1 - precision) * cost
+        savings_temp = int(250 - cost_per_part)
+
+        if savings_temp > 0:
+            savings_spanen = 'Kosteneinsparung aktuelles Bauteil: ' + str(savings_temp) + ' €'
+            style_savings_spanen = {"color": 'green'}
+        else:
+            savings_spanen = 'Kostenerhöhung aktuelles Bauteil: ' + str(savings_temp) + ' €'
+            style_savings_spanen = {"color": 'darkred'}
+
+        cost_misclassification_spanen = list_cost_misclass
+
+    return [cost_misclassification_spanen, savings_spanen, style_savings_spanen, increase_in_costs_spanen]

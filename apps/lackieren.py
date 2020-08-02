@@ -13,6 +13,7 @@ from app import app
 import numpy as np
 import pickle
 
+import os
 from os import path
 import re, ast
 
@@ -263,10 +264,19 @@ layout = html.Div([
                         dcc.Tab(label='Wirtschaftliche Bewertung', style=tab_style, selected_style=tab_selected_style,
                                 children=[
                                     html.Div([
-                                        html.H5("Wirtschaftliche Bewertung einfügen.")
+                                        html.H6("Kostensenkung durch Eliminierung der Qualitätskontrolle: "),
+                                        html.Ul(
+                                            html.Li("Ø 5 Arbeitsstunden mit Personalkostensatz von 50 €/h = 250€"),
+                                        ),
+                                        html.H6(id='increase_in_costs_lackieren'),
+                                        html.Ul(
+                                            [
+                                            ],
+                                            id='cost_misclassification_lackieren',
+                                        ),
+                                        html.H6(id='savings_lackieren')
                                     ],
                                         className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),
-                                    # d-flex
                                 ]),
                     ], style=tabs_styles),
                 ], className="flex-column, flex-hd-row p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
@@ -733,3 +743,89 @@ def update_inputs(pathname, slider_status):
                 f1_score_callback, precision_callback, sensitivity_callback,
                 lackieren_confusion_absolute_callback, lackieren_confusion_normalised_callback,
                 lackieren_train_power, lackieren_train_pressure, lackieren_train_temp]
+
+# callback for updating economic evaluation
+@app.callback([
+    Output('cost_misclassification_lackieren', 'children'),
+    Output('savings_lackieren', 'children'),
+    Output('savings_lackieren', 'style'),
+    Output('increase_in_costs_lackieren', 'children'),
+], [
+    Input('url', 'pathname'),
+    Input('dataset-slider_lackieren', 'value'),
+    Input('category_lackieren', 'children')
+])
+def update_economic_evaluation(pathname, slider_status, category):
+    if pathname == '/lackieren':
+
+        n_train = int(slider_status)
+
+        # load accuracy metrics
+        with open("assets/lackieren/lackieren_knn_data_" + str(n_train) + ".csv") as mycsv:
+            count = 0
+            for line in mycsv:
+                if count == 4:
+                    classification_report = line
+                if count == 5:
+                    break
+                count += 1
+
+        # transform strings to numpy lists, while conserving np.array dimensions
+        classification_report = re.sub('\s+', '', classification_report)
+        classification_report = ast.literal_eval(classification_report)
+
+        # get accuracy metrics from classification_report
+        precision_gutteil = np.round(classification_report['0.0']['precision'], 2)
+        precision_nachbearbeiten = np.round(classification_report['1.0']['precision'], 2)
+        precision_ausschuss = np.round(classification_report['2.0']['precision'], 2)
+
+        # this gives prediction for newly simulated data point: gutteil, nachbearbeiten, aussschuss
+        cat = category['props']['children'][3]['props']['children']
+
+        # select correct precision and cost for misclassification depending on class
+        if cat == 'Gutteil':
+            precision = precision_gutteil
+            # reasoning: if a part is wrongly classified as OK, there will be unnecessary cost of  processing the part
+            # at station assembly (500). we assume additional cost due to customer complaint that
+            # part is not OK (3000)
+            cost = 3500
+            list_cost_misclass = [
+                html.Li(
+                    'Kosten für weitere Bearbeitung an Stationen Lackieren und Montage: 500€ * (1 - ' + 'Präzision der Klasse (' + str(
+                        precision) + '))'),
+                html.Li('Kosten durch Kundenreklamation: 3000 € * (1 - ' + 'Präzision der Klasse (' + str(precision) + '))')
+            ]
+            increase_in_costs_lackieren = 'Kostenerhöhung durch Fehlklassifizierung als Klasse Gutteil:'
+
+        elif cat == 'Nachbearbeiten':
+            precision = precision_nachbearbeiten
+            # reasoning: if a part is wrongly classified as rework, there will be unnecessary cost of  processing the part
+            # at station lackieren again (500)
+            cost = 500
+            list_cost_misclass = html.Li(
+                'Kosten für Nachbearbeitung an Station Lackieren: 500 € * ( 1 - ' + 'Präzision der Klasse (' + str(
+                    precision) + '))')
+            increase_in_costs_lackieren = 'Kostenerhöhung durch Fehlklassifizierung als Klasse Nachbearbeiten:'
+
+        elif cat == 'Ausschuss':
+            precision = precision_ausschuss
+            # reasoning: if a part is wrongly classified as scrap, we have unnecessary cost of wasting raw material (2000)
+            cost = 2000
+            list_cost_misclass = html.Li(
+                'Kosten für Verlust an Rohmaterial: 2000 € * (1 - ' + 'Präzision der Klasse (' + str(
+                    precision) + '))')
+            increase_in_costs_lackieren = 'Kostenerhöhung durch Fehlklassifizierung als Klasse Ausschuss:'
+
+        cost_per_part = (1 - precision) * cost
+        savings_temp = int(250 - cost_per_part)
+
+        if savings_temp > 0:
+            savings_lackieren = 'Kosteneinsparung aktuelles Bauteil: ' + str(savings_temp) + ' €'
+            style_savings_lackieren = {"color": 'green'}
+        else:
+            savings_lackieren = 'Kostenerhöhung aktuelles Bauteil: ' + str(savings_temp) + ' €'
+            style_savings_lackieren = {"color": 'darkred'}
+
+        cost_misclassification_lackieren = list_cost_misclass
+
+    return [cost_misclassification_lackieren, savings_lackieren, style_savings_lackieren, increase_in_costs_lackieren]
