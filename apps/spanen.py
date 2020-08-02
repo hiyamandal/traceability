@@ -790,7 +790,7 @@ def update_economic_evaluation(pathname, slider_status, category):
             precision = precision_gutteil
             # reasoning: if a part is wrongly classified as OK, there will be unnecessary cost of  processing the part
             # at stations lackieren (500) and assembly (500). we assume additional cost due to customer complaint that
-            # part is not OK (3000)
+            # part is not OK (3000). cost needs to be multiplied by precision (probability of misclassification)
             cost = 4000
             list_cost_misclass = [
                 html.Li(
@@ -803,7 +803,7 @@ def update_economic_evaluation(pathname, slider_status, category):
         elif cat == 'Nachbearbeiten':
             precision = precision_nachbearbeiten
             # reasoning: if a part is wrongly classified as rework, there will be unnecessary cost of  processing the part
-            # at station spanen again (500)
+            # at station spanen again (500). cost needs to be multiplied by precision (probability of misclassification)
             cost = 500
             list_cost_misclass = html.Li(
                 'Kosten für Nachbearbeitung an Station Spanen: 500 € * ( 1 - ' + 'Präzision der Klasse (' + str(
@@ -813,6 +813,7 @@ def update_economic_evaluation(pathname, slider_status, category):
         elif cat == 'Ausschuss':
             precision = precision_ausschuss
             # reasoning: if a part is wrongly classified as scrap, we have unnecessary cost of wasting raw material (2000)
+            # cost needs to be multiplied by precision (probability of misclassification)
             cost = 2000
             list_cost_misclass = html.Li(
                 'Kosten für Verlust an Rohmaterial: 2000 € * (1 - ' + 'Präzision der Klasse (' + str(
