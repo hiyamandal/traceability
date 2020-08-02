@@ -1,4 +1,3 @@
-import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
@@ -6,7 +5,7 @@ import dash_bootstrap_components as dbc
 from apps import commonmodules
 from app import app
 
-
+# layout for page 'montage'
 layout = html.Div([
     commonmodules.get_header(),
     html.Br(),
@@ -21,7 +20,7 @@ layout = html.Div([
     html.Div( id="montage-ende"),
 ])
 
-
+# update based on user input (part io / part nio)
 @app.callback([
           Output('montage-ende', 'children'),
       ],[

@@ -1,4 +1,3 @@
-import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
@@ -7,10 +6,9 @@ from apps import commonmodules
 from app import app
 
 
+# layout for page anmeldung
 layout = html.Div([
     commonmodules.get_header(),
-    # html.Br(),
-    # commonmodules.get_menu(),
     html.Br(),
     html.Div([
         html.H3('Station Anmeldung', style={'font-weight': 'bold', 'text-decoration': 'underline'}),
@@ -21,11 +19,11 @@ layout = html.Div([
         ]),
         html.Br(),
         html.Div(id="anmeldung"),
-        #html.H4('Bitte neues Bauteil anmelden!'),
     ], className='twelve columns'),
 
 ])
 
+# callback for button
 @app.callback([
           Output('anmeldung', 'children'),
           Output('anmeldung', 'style'),
@@ -39,7 +37,8 @@ def update_anmeldung(n_clicks):
         child = html.H4('Bitte neues Bauteil anmelden!'),
     else:
         child = html.Div(
-            [   html.H4('Bauteil ist angemeldet!'),
+            [
+                html.H4('Bauteil ist angemeldet!'),
                 html.Br(),
                 dbc.Alert(
                     [

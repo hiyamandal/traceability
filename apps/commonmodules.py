@@ -1,9 +1,8 @@
 import dash_html_components as html
-
 import dash_bootstrap_components as dbc
-
 from app import app
 
+# definition of page header
 def get_header():
     header = html.Div([
         html.Div([
@@ -13,6 +12,7 @@ def get_header():
     ], className="row gs-header gs-text-header")
     return header
 
+# definition of page sidebar
 def get_sidebar():
     # the style arguments for the sidebar. We use position:fixed and a fixed width
     SIDEBAR_STYLE = {
@@ -41,7 +41,6 @@ def get_sidebar():
         ],
         style=SIDEBAR_STYLE,
     )
-
     return sidebar
 
 

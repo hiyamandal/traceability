@@ -5,8 +5,6 @@ from sklearn import neighbors, datasets
 
 import pickle
 
-global_list = []
-
 n_train = 3000
 n_neighbors = 5
 
@@ -34,7 +32,7 @@ def gen_data(n_train):
 
     return F, P, X
 
-# assigning labels to the data (0=Gutteil,1=Nachbearbeiten,2=Ausschuss)
+# assigning labels to the data (0=Gutteil, 1=Nachbearbeiten, 2=Ausschuss)
 def labels(F, P):
 
     # initialize all labels with OK
@@ -67,9 +65,10 @@ def labels(F, P):
             cat[i] = np.random.multinomial(1, prior, size=1)[0][0]
     return cat
 
-# create and save plots
+# make classification, create and save plots
 def plotting(n_train, n_neighbors):
 
+    # load data
     F, P, X = gen_data(n_train)
     y = labels(F, P)
 
@@ -77,21 +76,20 @@ def plotting(n_train, n_neighbors):
     from sklearn.model_selection import train_test_split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.3,
                                                         random_state=0)
-    h = .02  # step size in the mesh, was 0.02
 
-    weights = 'uniform'
-    # for weights in ['uniform', 'distance']:
     from sklearn.multiclass import OneVsRestClassifier
 
     # we create an instance of Neighbours Classifier and fit the data.
+    weights = 'uniform'
     classifier = OneVsRestClassifier(neighbors.KNeighborsClassifier(n_neighbors, weights=weights))
     clf = classifier.fit(X_train, y_train)
 
-    # save model to binary with pickle
+    # save model to binary with pickle to load it in plotly dash
     pickle.dump(clf, open("spanen_knn_model_"+str(n_train)+".sav", 'wb'))
 
     # Plot the decision boundary. For that, we will assign a color to each
     # point in the mesh [x_min, x_max]x[y_min, y_max].
+    h = .02  # step size in the mesh
     x_min, x_max = X_train[:, 0].min() - 1, X_train[:, 0].max() + 1
     y_min, y_max = X_train[:, 1].min() - 1, X_train[:, 1].max() + 1
     xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
@@ -135,13 +133,6 @@ def plotting(n_train, n_neighbors):
     # plt.savefig('test_spanen.png')
     # plt.show()
 
-    # calculate classification
-    # convert contourplot data to list
-    xx_list = xx[0, :].tolist()
-    yy_list = yy[:, 0].tolist()
-    Z_transp = Z
-    Z_list = Z_transp.tolist()
-
     # do prediction on test data
     from sklearn.metrics import confusion_matrix
     y_pred = clf.predict(X_test)
@@ -152,10 +143,16 @@ def plotting(n_train, n_neighbors):
     print(report)
     print(report['0.0']['precision'])
 
+    # convert contourplot data to list to save it in file
+    xx_list = xx[0, :].tolist()
+    yy_list = yy[:, 0].tolist()
+    Z_transp = Z
+    Z_list = Z_transp.tolist()
+
     # save data for contourplot in file
     file = open("spanen_knn_data_"+str(n_train)+".csv", "w+")
     file.write(str(y_test.tolist()) + "\n")
-    file.write(str(X_test.tolist()) + "\n")  # +","+str(xx_list)+","+str(yy_list)+","+str(Z_list))
+    file.write(str(X_test.tolist()) + "\n")
     file.write(str(xx_list) + "\n")
     file.write(str(yy_list) + "\n")
     file.write(str(Z_list) + "\n")

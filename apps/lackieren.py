@@ -13,6 +13,10 @@ from app import app
 import numpy as np
 import pickle
 
+from os import path
+import re, ast
+
+# saves last status of prediction result (ok / rework / scrap)
 global_index_lackieren = [0]
 
 # tab styles
@@ -42,7 +46,7 @@ tab_selected_style = {
 
 config = dict({'scrollZoom': True})
 
-# page content
+# page content of page lackieren
 layout = html.Div([
     commonmodules.get_header(),
     html.Br(),
@@ -53,26 +57,28 @@ layout = html.Div([
     html.Div([
         dbc.Row([
             dbc.Col([
+                # bar plot of process parameters, updated by callbacks
                 html.Div([
                     dbc.Row([
                         html.Div([
-                            dcc.Graph(id='fig1_callback_lackieren'),
+                            dcc.Graph(id='fig1_leistung_lackieren'),
                         ], style={'textAlign': 'center', 'width': '100%'}),
                     ]),
 
                     dbc.Row([
                         html.Div(
                             [
-                                dcc.Graph(id='fig2_callback_lackieren'),
+                                dcc.Graph(id='fig2_druck_lackieren'),
                              ], style={'textAlign': 'center', 'width': '100%'}),
 
                     ]),
                     dbc.Row([
-                        html.Div([dcc.Graph(id='fig3_callback_lackieren'), ],
+                        html.Div([dcc.Graph(id='fig3_temperatur_lackieren'), ],
                                  style={'textAlign': 'center', 'width': '100%'}),
                     ]),
                 ],
                 className = "pretty_container",),
+                # containers with evaluation (ok / rework / scrap) and accuracy measures (accuracy, f1score, precision, sensitivity)
                 dbc.Row(
                         [
                             html.Div(
@@ -105,12 +111,14 @@ layout = html.Div([
                 ),
             ],
             width=6),
+            # plot with test data and newly generated data points
+            # slider for increasing / decreasing training data
             dbc.Col([
                 html.Div([
                     html.H5("Vorhergesagte Klasse für Testdaten", style={"text-align": "center",'font-weight': 'bold'}),
                     html.Br(),
                     html.Div([
-                        dcc.Graph(id='fig4_callback_lackieren'),
+                        dcc.Graph(id='fig4_classification_lackieren'),
                         html.H6("Anzahl an Datenpunkten (Training + Test):", style={"text-align": "center",'font-weight': 'bold'}),
                         dcc.Slider(
                             id='dataset-slider_lackieren',
@@ -134,12 +142,15 @@ layout = html.Div([
         ),
     ], className="flex-hd-row, flex-column align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),
     html.Hr(style={'height': '30px', 'font-weight': 'bold'}),
+    # recommendation: either OK and go on to station 'montage' OR rework at station 'lackieren' OR scrap and go to 'anmeldung'
+    # updated in callbacks
     html.H5('Handlungsempfehlung', style={'font-weight': 'bold'}),
     html.Br(),
     html.Div(
         className="flex-hd-row, flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm",
         id="recommendation_lackieren"),
     html.Br(),
+    # Buttons for folding/unfolding options: go on to station 'montage', rework at station 'lackieren', scrap and go to 'anmeldung'
     html.Div(
     [
         dbc.Button(
@@ -185,6 +196,7 @@ layout = html.Div([
     ],
     ),
     html.Hr(),
+    # button for unfolding detailed information
     html.H5('Detailinformationen', style={'font-weight': 'bold'}),
     html.Br(),
     html.Div(
@@ -264,9 +276,23 @@ layout = html.Div([
         ],
     ),
     html.Hr(),
+    html.Div(id='hidden-div-lackieren', style={'display': 'none'})
 ])
 
-# callbacks
+# reset slider status in temp .csv file on page reload
+@app.callback([
+          Output('hidden-div-lackieren','value')
+      ],[
+          Input('url','pathname'),
+       ])
+def reset_slider_status(pathname):
+    if pathname == '/lackieren':
+        file = open("temp/temp_lackieren_slider.csv", "w")
+        file.write(str(2000) + "\n")
+        file.close()
+    return [None]
+
+# button for collapsing options
 @app.callback(
     Output("collapse-options_lackieren", "is_open"),
     [Input("collapse-button-options_lackieren", "n_clicks")],
@@ -277,6 +303,7 @@ def toggle_collapse_options(n, is_open):
         return not is_open
     return is_open
 
+# callback for collapsing detailed information (confusion matrix, economic evaluation, sectional view of classification results)
 @app.callback(
     Output("collapse-details_lackieren", "is_open"),
     [Input("collapse-button-details_lackieren", "n_clicks")],
@@ -287,36 +314,46 @@ def toggle_collapse_options(n, is_open):
         return not is_open
     return is_open
 
+# update bar graphs, update classification plot, update accuracy metrics, update recommendation
 @app.callback([
-          Output('fig1_callback_lackieren', 'figure'),
-          Output('fig2_callback_lackieren', 'figure'),
-          Output('fig3_callback_lackieren', 'figure'),
-          Output('fig4_callback_lackieren', 'figure'),
+          # bar graphs
+          Output('fig1_leistung_lackieren', 'figure'),
+          Output('fig2_druck_lackieren', 'figure'),
+          Output('fig3_temperatur_lackieren', 'figure'),
+          # classification plot
+          Output('fig4_classification_lackieren', 'figure'),
+          # update category container (colored in red / green / orange)
           Output('category_lackieren', 'children'),
           Output('category_lackieren', 'style'),
+          # update recommendation for user
           Output('recommendation_lackieren', 'children'),
+          # update accuracy metrics (based on number on training points)
           Output('accuracy_lackieren', 'children'),
           Output('f1score_lackieren', 'children'),
           Output('precision_lackieren', 'children'),
           Output('sensitivity_lackieren', 'children'),
+          # update confusion matrix (based on number of training points)
           Output('lackieren_confusion_absolute', 'children'),
           Output('lackieren_confusion_normalised', 'children'),
+          # update classification results (sectional view), based on number of training points
           Output('lackieren_train_power', 'children'),
           Output('lackieren_train_pressure', 'children'),
           Output('lackieren_train_temp', 'children'),
       ],[
+          # input url
           Input('url','pathname'),
+          # input data slider status
           Input('dataset-slider_lackieren','value'),
        ])
 def update_inputs(pathname, slider_status):
 
+    # save number of training data from status of slider
     n_train = slider_status
 
-    # load model from pickle
+    # load model from pickle for doing prediction on new data points lateron
     clf = pickle.load(open("assets/lackieren/lackieren_knn_model_" + str(n_train) + ".sav", 'rb'))
 
-    from os import path
-    # load old slider status from file
+    # load last slider status from temp file
     if path.exists("temp/temp_lackieren_slider.csv"):
         f = open("temp/temp_lackieren_slider.csv", "r")
         old_slider_status = int(f.read())
@@ -324,58 +361,55 @@ def update_inputs(pathname, slider_status):
     else:
         old_slider_status= None
 
-    # write new slider status to file
+    # write momentary slider status to file
     file = open("temp/temp_lackieren_slider.csv", "w")
     file.write(str(slider_status) + "\n")
     file.close()
 
     if pathname == '/lackieren':
 
-        # load training and test data for scatter plot
+        # load training, test data and accuracy metrics
         with open("assets/lackieren/lackieren_knn_data_"+str(n_train)+".csv") as mycsv:
             count = 0
             for line in mycsv:
                 if count == 0:
-                    z_test_load = line
+                    prediction_test_load = line
                 if count == 1:
-                    data_test_load = line
+                    testdata_load = line
                 if count == 2:
-                    z_train_load = line
+                    prediction_train_load = line
                 if count == 3:
-                    data_train_load = line
+                    traindata_load = line
                 if count == 4:
-                    report = line
+                    classification_report = line
                 if count == 5:
                     break
                 count += 1
 
         # transform strings to numpy lists, while conserving np.array dimensions
-        import re, ast
+        prediction_test_load = re.sub('\s+', '', prediction_test_load)
+        prediction_test_scatter = ast.literal_eval(prediction_test_load)
 
-        z_test_load = re.sub('\s+', '', z_test_load)
-        z_test_scatter = ast.literal_eval(z_test_load)
+        testdata_load = re.sub('\s+', '', testdata_load)
+        testdata_load = np.asarray(ast.literal_eval(testdata_load))
+        Leistung_test_scatter = np.round(testdata_load[:, 0],2).tolist()
+        Druck_test_scatter = np.round(testdata_load[:, 1],2).tolist()
+        Temperatur_test_scatter = np.round(testdata_load[:, 2],2).tolist()
 
-        data_test_load = re.sub('\s+', '', data_test_load)
-        data_test_load = np.asarray(ast.literal_eval(data_test_load))
-        L_test_scatter = np.round(data_test_load[:, 0],2).tolist()
-        D_test_scatter = np.round(data_test_load[:, 1],2).tolist()
-        T_test_scatter = np.round(data_test_load[:, 2],2).tolist()
+        classification_report = re.sub('\s+', '', classification_report)
+        classification_report = ast.literal_eval(classification_report)
 
-        report = re.sub('\s+', '', report)
-        report = ast.literal_eval(report)
-
-        # get accuracy metrics from report
-        accuracy = np.round(report['accuracy'], 2)
-        f1_score = np.round(report['macroavg']['f1-score'], 2)
-
-        precision_gutteil = np.round(report['0.0']['precision'], 2)
-        sensitivity_gutteil = np.round(report['0.0']['recall'], 2)
-        precision_nachbearbeiten = np.round(report['1.0']['precision'], 2)
-        sensitivity_nachbearbeiten = np.round(report['1.0']['recall'], 2)
-        precision_ausschuss = np.round(report['2.0']['precision'], 2)
-        sensitivity_ausschuss = np.round(report['2.0']['recall'], 2)
+        # get accuracy metrics from classification_report
+        accuracy = np.round(classification_report['accuracy'], 2)
+        f1_score = np.round(classification_report['macroavg']['f1-score'], 2)
+        precision_gutteil = np.round(classification_report['0.0']['precision'], 2)
+        sensitivity_gutteil = np.round(classification_report['0.0']['recall'], 2)
+        precision_nachbearbeiten = np.round(classification_report['1.0']['precision'], 2)
+        sensitivity_nachbearbeiten = np.round(classification_report['1.0']['recall'], 2)
+        precision_ausschuss = np.round(classification_report['2.0']['precision'], 2)
+        sensitivity_ausschuss = np.round(classification_report['2.0']['recall'], 2)
         
-        # load old process parameters from file
+        # load last process parameters from file
         if path.exists("temp/temp_process_params_lackieren.csv"):
 
             f = open("temp/temp_process_params_lackieren.csv", "r")
@@ -385,13 +419,14 @@ def update_inputs(pathname, slider_status):
             process_params_load2 = re.sub('\s+', '', process_params_load1)
             process_params = ast.literal_eval(process_params_load2)
             
-        # if new slider status equals old slider status, dont create a new pair of process parameters
+        # only simulate a new data point on page refresh
         if slider_status == old_slider_status or path.exists("temp/temp_process_params_lackieren.csv") == False:
 
+            # make sure that class is not the same as before on page refrehs
             index = global_index_lackieren[-1]
             while global_index_lackieren[-1] == index:
                 
-                # create randomized process parameters
+                # create randomized process parameter from multivariate gaussian
                 mean = [1.5, 6, 32]
                 cov = [[1.5, 0, 0], [0, 5, 0], [0, 0, 120]] # 1,3,100
 
@@ -400,6 +435,7 @@ def update_inputs(pathname, slider_status):
                 D = np.abs(D)
                 T = np.abs(T)
 
+                # use saved k-nearest-neighbor classification algorithm for predicting class (ok/rework/scrap) for newly generated data point
                 z = clf.predict(np.c_[L, D, T])
                 index = int(z)
 
@@ -412,11 +448,12 @@ def update_inputs(pathname, slider_status):
                 
             global_index_lackieren.append(index)
 
-        # do prediction
+        # use saved k-nearest-neighbor classification algorithm for predicting class (ok/rework/scrap)
+        # for newly generated data point or for last data point loaded from file
         z = clf.predict(
             np.c_[process_params[0][0], process_params[1][0], process_params[2][0]])
 
-        # load confusion matrix
+        # load confusion matrix depending on training data
         lackieren_confusion_absolute_callback = html.Div([
             html.Img(src=app.get_asset_url('lackieren/lackieren_confusion_absolute_' + str(n_train) + '.png'))
         ],)
@@ -424,7 +461,7 @@ def update_inputs(pathname, slider_status):
             html.Img(src=app.get_asset_url('lackieren/lackieren_confusion_normalised_' + str(n_train) + '.png'))
         ],)
 
-        # load predictions along planes
+        # load predictions along planes of constant parameters, based on training data
         lackieren_train_power= html.Div([
             html.Img(src=app.get_asset_url('lackieren/lackieren_train_power_' + str(n_train) + '.png'))
         ],)
@@ -549,7 +586,7 @@ def update_inputs(pathname, slider_status):
         ),
 
         # dataframe for scatter of test data
-        df_test = pandas.DataFrame({'L_test_scatter': L_test_scatter, 'D_test_scatter': D_test_scatter, 'T_test_scatter': T_test_scatter,'z_test_scatter': z_test_scatter})
+        df_test = pandas.DataFrame({'Leistung_test_scatter': Leistung_test_scatter, 'Druck_test_scatter': Druck_test_scatter, 'Temperatur_test_scatter': Temperatur_test_scatter,'prediction_test_scatter': prediction_test_scatter})
 
         # define marker colors
         marker_color = {
@@ -558,15 +595,15 @@ def update_inputs(pathname, slider_status):
             0.0: 'lightgreen'
         }
 
-        marker_colors = [marker_color[k] for k in df_test['z_test_scatter'].values]
+        marker_colors = [marker_color[k] for k in df_test['prediction_test_scatter'].values]
 
         fig4_callback = go.Figure()
 
         # scatter plot of test data
         fig4_callback.add_trace(go.Scatter3d(
-            x=df_test['L_test_scatter'],
-            y=df_test['D_test_scatter'],
-            z=df_test['T_test_scatter'],
+            x=df_test['Leistung_test_scatter'],
+            y=df_test['Druck_test_scatter'],
+            z=df_test['Temperatur_test_scatter'],
             mode='markers',
             name='Testdaten',
             showlegend=False,
@@ -593,7 +630,6 @@ def update_inputs(pathname, slider_status):
             marker_color='magenta',
             marker=dict(
                 symbol='cross',
-                # color='rgb(255, 178, 102)',
                 size=30,
                 line=dict(
                     color='DarkSlateGrey',
@@ -619,6 +655,7 @@ def update_inputs(pathname, slider_status):
                 )
         )
 
+        # update recommendation for user: go on to station 'montage', rework at station 'lackieren', scrap and go to 'anmeldung'
         if z[0] == 0:
             cat_string = "Gutteil"
             cat_color = "green"
@@ -654,6 +691,7 @@ def update_inputs(pathname, slider_status):
                                 style={'font-size': '130%'},
                                 ),
 
+        # update colored box based on predicted category
         category = html.Div(
                         [
                             html.Br(),
