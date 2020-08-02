@@ -221,13 +221,13 @@ layout = html.Div([
                                     dbc.Col(
                                         html.Div([
                                         ],
-                                            style = {'width': '100 %', "text-align": "center", 'display': "flex"}, id='spanen_confusion_absolute',
+                                            style = {'width': '100 %', "text-align": "center"}, id='spanen_confusion_absolute', # 'display': "flex"
                                         ),
                                     ),
                                     dbc.Col(
                                         html.Div([
                                         ],
-                                            style={'width': '100 %', "text-align": "center", 'display': "flex"}, id ='spanen_confusion_normalised',
+                                            style={'width': '100 %', "text-align": "center"}, id ='spanen_confusion_normalised', # 'display': "flex"
                                         ),
                                     ),
                                 ], align="center",)
@@ -235,8 +235,18 @@ layout = html.Div([
                         ]),
                         dcc.Tab(label='Wirtschaftliche Bewertung', style=tab_style, selected_style=tab_selected_style, children=[
                             html.Div([
-                                html.H6("Wirtschaftliche Bewertung einfügen.")
-                            ], className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
+                                html.H6("Kosteneinsparpotential durch Eliminierung der Qualitätskonstrolle: "),
+                                html.Ul(
+                                    html.Li("Ø 10 Arbeitsstunden mit Personalkostensatz von 50 €/h = 500€"),
+                                ),
+                                html.H6('Kosten durch Fehlklassifizierung: '),
+                                html.Ul(
+                                    [html.Li("Ø 10 Arbeitsstunden mit Personalkostensatz von 50 €/h = 500€"),
+                                    ],
+                                    id='cost_misclassification_spanen',
+                                ),
+                                html.H6(id='savings_spanen')
+                            ], className="flex-hd-row flex-column p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  #style={'width': '100 %', "text-align": "center"}
                         ]),
                     ], style=tabs_styles),
                 ], className="flex-column, flex-hd-row p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm"),  # d-flex
@@ -247,6 +257,22 @@ layout = html.Div([
     html.Hr(),
     html.Div(id='hidden-div-spanen', style={'display':'none'})
 ])
+
+
+# callback for updating econmic evaluation
+@app.callback([
+          Output('cost_misclassification_spanen', 'children'),
+          Output('savings_spanen', 'children')
+      ],[
+          Input('url','pathname'),
+          Input('dataset-slider_spanen','value'),
+       ])
+def update_economic_evaluation(pathname, slider_status):
+    if pathname == '/spanen':
+        n_train = int(slider_status)
+        cost_misclassification = None
+        savings_spanen = '1'
+    return [cost_misclassification, savings_spanen]
 
 # reset slider status in temp .csv file on page reload
 @app.callback([
@@ -733,3 +759,4 @@ def update_inputs(pathname, slider_status):
         return [fig1_callback, fig2_callback, fig3_callback, category, style, empfehlung_alert, accuracy_callback,
                 f1_score_callback, precision_callback, sensitivity_callback,
                 spanen_confusion_absolute_callback, spanen_confusion_normalised_callback]
+
