@@ -15,7 +15,8 @@ layout = html.Div([
         html.Hr(),
         html.Div(
         [
-            dbc.Button("Anmeldung", color="primary", className="mr-1", id="button-anmeldung", style={'font-size': '100%'},),
+            html.A(dbc.Button("Anmeldung", color="primary", className="mr-1", id="button-anmeldung",
+                              style={'font-size': '100%'},), href="/spanen"),
         ]),
         html.Br(),
         html.Div(id="anmeldung"),
